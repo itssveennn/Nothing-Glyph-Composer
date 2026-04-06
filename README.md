@@ -17,12 +17,12 @@ Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pr
 
 ## Files
 
-- `index.html` - main app
-- `tutorial.html` - short guide for creating compatible OGG files
+- [Glyph Composer](https://itssveennn.github.io/Nothing-Glyph-Composer/index.html) - main app
+- [Tutorial for .ogg](file:///C:/Users/Sven/Downloads/composer%20new/tutorial.html) - short guide for creating compatible OGG files
 
 ## Quick Start
 
-1. Open `index.html` in your browser.
+1. Open [Glyph Composer](https://itssveennn.github.io/Nothing-Glyph-Composer/index.html) in your browser.
 2. Create your animation on the matrix.
 3. Optional: load an existing JSON file.
 4. Set a title in `Rintone title / Filename.`.
@@ -52,7 +52,7 @@ JSON import/export uses this schema:
 
 ## OGG Preparation (Short Version)
 
-Detailed guide: `tutorial.html`
+Detailed guide: [Tutorial for .ogg](file:///C:/Users/Sven/Downloads/composer%20new/tutorial.html)
 
 Recommended workflow:
 
