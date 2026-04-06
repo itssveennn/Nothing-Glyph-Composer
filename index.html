@@ -8,6 +8,9 @@
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #fff; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; touch-action: manipulation; }
+        .top-nav { width: 100%; max-width: 1000px; display: flex; justify-content: center; gap: 14px; margin-bottom: 10px; }
+        .top-nav a { color: #bbb; text-decoration: none; font-size: 0.9em; padding: 6px 10px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; }
+        .top-nav a.active { color: #fff; border-color: #ff3131; }
         h1 { color: #ffffff; margin: 10px 0 5px 0; font-size: 1.5em; text-align: center; }
         .subtitle { color: #aaaaaa; margin-bottom: 20px; font-size: 0.85em; text-align: center; }
         .main-container { display: flex; gap: 20px; max-width: 1000px; width: 100%; justify-content: center; flex-direction: row; }
@@ -67,6 +70,10 @@
     </style>
 </head>
 <body>
+    <div class="top-nav">
+        <a class="active" href="index.html">Glyph Composer</a>
+        <a href="gallery.html">Gallery</a>
+    </div>
     <h1>Glyph Composer</h1>
     <div class="subtitle">Nothing Phone 4a Pro (60 FPS)</div>
 
@@ -851,32 +858,7 @@
             reader.onload = (e) => {
                 try {
                     const json = JSON.parse(e.target.result);
-                    if (!json || !Array.isArray(json.frames)) {
-                        throw new Error("JSON needs a 'frames' array.");
-                    }
-
-                    const newFrames = [];
-                    json.frames.forEach((f) => {
-                        if (!f || !Array.isArray(f.p)) return;
-                        const mapped = new Array(TOTAL_PIXELS).fill(0);
-                        let pIdx = 0;
-                        for (let i = 0; i < TOTAL_PIXELS; i++) {
-                            if (LED_MASK[i] !== 1) continue;
-                            const src = Number(f.p[pIdx] ?? 0);
-                            mapped[i] = Math.max(0, Math.min(4095, Math.round((src / 255) * 4095)));
-                            pIdx++;
-                        }
-
-                        const d = Number(f.d);
-                        const reps = Math.max(1, Math.round((Number.isFinite(d) ? d : FRAME_MS) / FRAME_MS));
-                        for (let r = 0; r < reps; r++) newFrames.push(mapped.slice());
-                    });
-
-                    if (newFrames.length === 0) throw new Error('No valid frames found in JSON.');
-
-                    frames = newFrames.map(normalizeFrame);
-                    currentFrame = 0;
-                    renderUI();
+                    applyImportedJson(json);
                 } catch (err) {
                     alert('JSON import failed: ' + (err && err.message ? err.message : String(err)));
                 }
@@ -887,7 +869,58 @@
             event.target.value = '';
         }
 
-        window.onload = renderUI;
+        function applyImportedJson(json) {
+            if (!json || !Array.isArray(json.frames)) {
+                throw new Error("JSON needs a 'frames' array.");
+            }
+
+            const newFrames = [];
+            json.frames.forEach((f) => {
+                if (!f || !Array.isArray(f.p)) return;
+                const mapped = new Array(TOTAL_PIXELS).fill(0);
+                let pIdx = 0;
+                for (let i = 0; i < TOTAL_PIXELS; i++) {
+                    if (LED_MASK[i] !== 1) continue;
+                    const src = Number(f.p[pIdx] ?? 0);
+                    mapped[i] = Math.max(0, Math.min(4095, Math.round((src / 255) * 4095)));
+                    pIdx++;
+                }
+
+                const d = Number(f.d);
+                const reps = Math.max(1, Math.round((Number.isFinite(d) ? d : FRAME_MS) / FRAME_MS));
+                for (let r = 0; r < reps; r++) newFrames.push(mapped.slice());
+            });
+
+            if (newFrames.length === 0) throw new Error('No valid frames found in JSON.');
+
+            frames = newFrames.map(normalizeFrame);
+            currentFrame = 0;
+            renderUI();
+        }
+
+        function consumePendingGalleryImport() {
+            const key = "glyphComposerPendingImport";
+            const raw = localStorage.getItem(key);
+            if (!raw) return;
+            localStorage.removeItem(key);
+            try {
+                const data = JSON.parse(raw);
+                if (data && typeof data.title === "string" && data.title.trim()) {
+                    const titleInput = document.getElementById('titleInput');
+                    if (titleInput && !titleInput.value.trim()) {
+                        titleInput.value = sanitizeFileName(data.title);
+                    }
+                }
+                applyImportedJson(data.json);
+            } catch (err) {
+                alert('Could not import gallery animation: ' + (err && err.message ? err.message : String(err)));
+            }
+        }
+
+        window.onload = () => {
+            renderUI();
+            consumePendingGalleryImport();
+        };
     </script>
 </body>
 </html>

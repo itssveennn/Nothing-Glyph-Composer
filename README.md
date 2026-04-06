@@ -10,6 +10,10 @@ Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pr
 - Preview with device-like 60 FPS timing
 - JSON import (`Load JSON`)
 - JSON export (`Export JSON`)
+- Gallery page (`gallery.html`) with:
+  - Shared animations from `gallery/gallery-index.json`
+  - Local JSON uploads (browser storage)
+  - `Use` button to open an animation in Glyph Composer
 - OGG export with metadata:
   - `AUTHOR=<glyph data>`
   - `TITLE=<ringtone title>`
@@ -18,6 +22,8 @@ Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pr
 ## Files
 
 - [Glyph Composer](https://itssveennn.github.io/Nothing-Glyph-Composer/index.html) - main app
+- `gallery.html` - gallery page with upload/use flow
+- `gallery/gallery-index.json` - shared gallery manifest
 - [Tutorial for .ogg](file:///C:/Users/Sven/Downloads/composer%20new/tutorial.html) - short guide for creating compatible OGG files
 
 ## Quick Start
@@ -28,6 +34,23 @@ Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pr
 4. Set a title in `Rintone title / Filename.`.
 5. Select your `.ogg`/`.opus` file.
 6. Click `Bake & Download OGG`.
+
+## Gallery
+
+`gallery.html` has two sections:
+
+- Shared Gallery: loaded from `gallery/gallery-index.json`
+- My Uploads: JSON files you upload in your browser
+
+`Use` sends the selected animation back to Glyph Composer and loads it automatically.
+
+To publish shared animations, add JSON files into `gallery/` and register them in `gallery/gallery-index.json`:
+
+```json
+[
+  { "title": "My Animation", "file": "my-animation.json" }
+]
+```
 
 ## JSON Format
 
