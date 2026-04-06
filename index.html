@@ -39,6 +39,22 @@
         .thumb-cell { background: #000; }
         .thumb-cell.disabled { background: #121212; opacity: 0.2; }
         .audio-section { width: 100%; max-width: 600px; margin-top: 30px; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #ff3131; text-align: center; }
+        .audio-head { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .info-link {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid #777;
+            color: #ddd;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            background: #1f1f1f;
+        }
+        .footer-note { margin-top: 20px; font-size: 0.75em; color: #888; }
         .bake-btn { background: #ff3131; color: #fff; padding: 15px 25px; font-weight: bold; border: none; cursor: pointer; border-radius: 8px; width: 100%; font-size: 1.1em; transition: 0.2s; margin-top: 15px; }
         .action-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 25px; width: 100%; max-width: 600px; }
         .import-btn { background: #2e7d32; color: #fff; padding: 15px; font-weight: bold; border: none; cursor: pointer; border-radius: 6px; font-size: 0.9em; flex: 1; }
@@ -70,19 +86,22 @@
     </div>
 
     <div class="action-buttons">
-        <button class="import-btn" onclick="document.getElementById('csvInput').click()">Load CSV</button>
         <button class="import-btn" onclick="document.getElementById('jsonInput').click()">Load JSON</button>
+        <button class="import-btn" onclick="exportJSON()">Export JSON</button>
     </div>
 
     <div class="audio-section">
-        <h3>Export Ringtone</h3>
+        <div class="audio-head">
+            <h3 style="margin:0;">Export Ringtone</h3>
+            <a class="info-link" href="tutorial.html" title="How to prepare a valid OGG file">i</a>
+        </div>
         <p style="font-size: 0.8em; color: #888;">Select your .ogg file to bake the animation into the file metadata.</p>
-        <input type="text" id="titleInput" placeholder="Ringtone title (TITLE tag + filename)" style="width:100%; max-width: 420px; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1e1e; color: #fff;">
+        <input type="text" id="titleInput" placeholder="Rintone title / Filename." style="width:100%; max-width: 420px; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1e1e; color: #fff;">
         <input type="file" id="audioInput" accept=".ogg,.opus" style="margin-bottom: 10px; color: white;">
         <button class="bake-btn" onclick="bakeOgg()">Bake &amp; Download OGG</button>
     </div>
+    <div class="footer-note">&copy; its.sveennn</div>
 
-    <input type="file" id="csvInput" style="display:none" accept=".csv, .txt" onchange="importCSV(event)">
     <input type="file" id="jsonInput" style="display:none" accept=".json" onchange="importJSON(event)">
 
     <script>
@@ -761,32 +780,60 @@
             return frame;
         }
 
-        function importCSV(event) {
-            stopPreview(true);
-            const file = event.target.files && event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
+        function frameToActivePixels8Bit(frame) {
+            const out = [];
+            for (let i = 0; i < TOTAL_PIXELS; i++) {
+                if (LED_MASK[i] !== 1) continue;
+                const v12 = Math.max(0, Math.min(4095, Number(frame[i]) || 0));
+                out.push(Math.round((v12 / 4095) * 255));
+            }
+            return out;
+        }
 
-            reader.onload = (e) => {
-                const text = String(e.target.result || '');
-                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-                const parsed = lines
-                    .map(line => line.split(/[;,]/).map(v => Number(v.trim())))
-                    .filter(arr => arr.length > 0);
+        function areFramesEqual(a, b) {
+            if (!a || !b || a.length !== b.length) return false;
+            for (let i = 0; i < a.length; i++) {
+                if ((a[i] || 0) !== (b[i] || 0)) return false;
+            }
+            return true;
+        }
 
-                if (parsed.length === 0) {
-                    alert('CSV contains no usable frames.');
-                    return;
+        function exportJSON() {
+            if (!Array.isArray(frames) || frames.length === 0) {
+                alert('No frames to export.');
+                return;
+            }
+
+            const titleInput = document.getElementById('titleInput');
+            const title = sanitizeFileName(titleInput ? titleInput.value : "") || "glyph_animation";
+
+            const packedFrames = [];
+            let runStart = 0;
+            while (runStart < frames.length) {
+                let runEnd = runStart + 1;
+                while (runEnd < frames.length && areFramesEqual(frames[runStart], frames[runEnd])) {
+                    runEnd++;
                 }
+                const repeats = runEnd - runStart;
+                packedFrames.push({
+                    p: frameToActivePixels8Bit(frames[runStart]),
+                    d: Math.round(repeats * FRAME_MS)
+                });
+                runStart = runEnd;
+            }
 
-                frames = parsed.map(normalizeFrame);
-                currentFrame = 0;
-                renderUI();
+            const payload = {
+                fps: FPS,
+                width: 13,
+                height: 13,
+                frames: packedFrames
             };
 
-            reader.onerror = () => alert('Could not read CSV file.');
-            reader.readAsText(file);
-            event.target.value = '';
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${title}.json`;
+            a.click();
         }
 
         function importJSON(event) {
