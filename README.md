@@ -1,37 +1,37 @@
 ﻿# Nothing Phone Glyph Composer (13x13)
 
-Web-Tool zum Erstellen von Glyph-Animationen fuer die 13x13-Matrix (Nothing Phone 4a Pro Workflow), inklusive OGG-Metadaten-Export fuer Klingeltoene.
+Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pro workflow), including OGG metadata export for ringtones.
 
 ## Features
 
-- 13x13 Matrix-Editor mit LED-Maske
-- Helligkeit pro Pixel (0-4095)
-- Frame-Timeline: Add, Copy, Delete, Navigation
-- Preview mit device-nahem 60-FPS-Timing
-- JSON Import (`Load JSON`)
-- JSON Export (`Export JSON`)
-- OGG Export mit Metadaten:
+- 13x13 matrix editor with LED mask
+- Per-pixel brightness (0-4095)
+- Frame timeline: Add, Copy, Delete, navigation
+- Preview with device-like 60 FPS timing
+- JSON import (`Load JSON`)
+- JSON export (`Export JSON`)
+- OGG export with metadata:
   - `AUTHOR=<glyph data>`
-  - `TITLE=<Ringtone title>`
-- Automatisches Loopen der Animation beim Export, falls der Sound laenger ist
+  - `TITLE=<ringtone title>`
+- Automatic animation looping on export when audio is longer than the animation
 
-## Dateien
+## Files
 
-- `index.html` - Hauptanwendung
-- `tutorial.html` - Kurzanleitung fuer kompatible OGG-Dateien
+- `index.html` - main app
+- `tutorial.html` - short guide for creating compatible OGG files
 
-## Schnellstart
+## Quick Start
 
-1. `index.html` im Browser oeffnen.
-2. Animation auf der Matrix erstellen.
-3. Optional: bestehende JSON-Datei laden.
-4. Im Feld `Rintone title / Filename.` einen Titel setzen.
-5. `.ogg`/`.opus` Datei auswaehlen.
-6. `Bake & Download OGG` klicken.
+1. Open `index.html` in your browser.
+2. Create your animation on the matrix.
+3. Optional: load an existing JSON file.
+4. Set a title in `Rintone title / Filename.`.
+5. Select your `.ogg`/`.opus` file.
+6. Click `Bake & Download OGG`.
 
-## JSON-Format
+## JSON Format
 
-Der JSON-Import/Export nutzt dieses Schema:
+JSON import/export uses this schema:
 
 ```json
 {
@@ -47,28 +47,28 @@ Der JSON-Import/Export nutzt dieses Schema:
 }
 ```
 
-- `p`: aktive LED-Werte als 8-bit (0-255), in Masken-Reihenfolge
-- `d`: Dauer in Millisekunden
+- `p`: active LED values as 8-bit (0-255), in mask order
+- `d`: duration in milliseconds
 
-## OGG vorbereiten (Kurzfassung)
+## OGG Preparation (Short Version)
 
-Detailliert: `tutorial.html`
+Detailed guide: `tutorial.html`
 
-Empfohlener Workflow:
+Recommended workflow:
 
-1. MP3 in Audacity oeffnen
-2. `Ctrl + A`
-3. `File -> Export Audio`
+1. Open your MP3 in Audacity
+2. Press `Ctrl + A`
+3. Go to `File -> Export Audio`
 4. Format: `Opus file`
-5. Rest unveraendert lassen
-6. Exportieren
-7. `.opus` in `.ogg` umbenennen
+5. Keep all other settings unchanged
+6. Export
+7. Rename `.opus` to `.ogg`
 
-## Hinweise
+## Notes
 
-- Dieses Tool arbeitet clientseitig im Browser (kein Server notwendig).
-- Nicht jede OGG-Datei ist identisch aufgebaut; exotische Streams koennen fehlschlagen.
-- Bei Problemen mit "Baking failed" am besten eine neue OGG-Datei nach obigem Workflow erzeugen.
+- This tool runs fully client-side in the browser (no server required).
+- Not all OGG files are structured the same; unusual streams may fail.
+- If you see `Baking failed`, create a fresh OGG file using the workflow above.
 
 ## Credits
 
