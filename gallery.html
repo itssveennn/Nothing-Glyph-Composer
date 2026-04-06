@@ -123,29 +123,22 @@
 
         function stopActivePlayer() {
             if (!activePlayer) return;
-            cancelAnimationFrame(activePlayer.rafId);
+            clearInterval(activePlayer.timerId);
             activePlayer.button.textContent = 'Play';
             activePlayer = null;
         }
 
         function startPlayer(player) {
             stopActivePlayer();
-            player.start = performance.now();
+            player.currentIndex = 0;
+            paintFrame(player.cells, player.frames[0]);
             player.button.textContent = 'Stop';
-
-            const loop = (now) => {
-                if (activePlayer !== player) return;
-                const elapsed = now - player.start;
-                const idx = Math.floor(elapsed / FRAME_MS) % player.frames.length;
-                if (idx !== player.currentIndex) {
-                    player.currentIndex = idx;
-                    paintFrame(player.cells, player.frames[idx]);
-                }
-                player.rafId = requestAnimationFrame(loop);
-            };
-
             activePlayer = player;
-            player.rafId = requestAnimationFrame(loop);
+            player.timerId = setInterval(() => {
+                if (activePlayer !== player) return;
+                player.currentIndex = (player.currentIndex + 1) % player.frames.length;
+                paintFrame(player.cells, player.frames[player.currentIndex]);
+            }, FRAME_MS);
         }
 
         function togglePlayer(player) {
@@ -195,8 +188,7 @@
                 cells,
                 button: playBtn,
                 currentIndex: 0,
-                start: 0,
-                rafId: 0
+                timerId: null
             };
 
             playBtn.onclick = () => togglePlayer(player);
