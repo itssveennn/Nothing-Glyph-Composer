@@ -22,6 +22,12 @@
         .brightness-control { width: 100%; max-width: 380px; margin-bottom: 15px; background: #1e1e1e; padding: 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .brightness-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95em; font-weight: bold; color: #ccc; }
         .brightness-slider { width: 100%; margin-bottom: 12px; cursor: pointer; accent-color: #fff; }
+        .tools-control { width: 100%; max-width: 380px; margin-bottom: 12px; background: #1e1e1e; padding: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #363636; }
+        .tool-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .tool-btn { border: 1px solid #555; background: #262626; color: #ececec; border-radius: 6px; font-size: 0.75em; padding: 5px 8px; cursor: pointer; }
+        .tool-btn.active { border-color: #ff3131; color: #fff; }
+        .tools-meta { margin-top: 8px; font-size: 0.72em; color: #a9a9a9; display: flex; justify-content: space-between; }
+        .tools-toggle { display: flex; align-items: center; gap: 5px; font-size: 0.72em; color: #cfcfcf; }
         #grid {
             display: grid;
             grid-template-columns: repeat(13, 1fr);
@@ -35,14 +41,18 @@
         }
         .cell { background: #000; border: 1px solid #333; border-radius: 2px; cursor: pointer; transition: background 0.1s; }
         .cell.disabled { background: #121212; border-color: #1a1a1a; cursor: not-allowed; opacity: 0.3; }
-        .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 360px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-        .frame-list { width: 100%; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
-        .stack-item { background: #151515; border: 1px solid #2f2f2f; border-radius: 8px; padding: 6px; }
-        .stack-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; }
+        .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 460px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        .frame-list { width: 100%; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; align-items: stretch; }
+        .stack-item { background: #151515; border: 1px solid #2f2f2f; border-radius: 8px; padding: 6px; width: 100%; }
+        .stack-head { display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin-bottom: 6px; }
         .stack-title { font-size: 0.72em; color: #cfcfcf; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .stack-actions { display: flex; gap: 4px; }
+        .stack-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
         .stack-actions button { border: 1px solid #555; background: #292929; color: #eee; border-radius: 5px; font-size: 0.68em; padding: 2px 6px; cursor: pointer; }
-        .frame-thumbnail { width: 100%; aspect-ratio: 1 / 1; background: #000; border: 2px solid #333; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; }
+        .stack-item.selected { border-color: #ff3131; box-shadow: inset 0 0 0 1px #ff3131; }
+        .stack-select { transform: scale(0.9); accent-color: #ff3131; }
+        .timeline-tools { width: 100%; display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+        .timeline-tools button { border: 1px solid #555; background: #272727; color: #ececec; border-radius: 5px; font-size: 0.68em; padding: 3px 7px; cursor: pointer; }
+        .frame-thumbnail { width: 72%; margin: 0 auto; aspect-ratio: 1 / 1; background: #000; border: 2px solid #333; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; }
         .frame-thumbnail.active { border-color: #f44336; }
         .stack-children { margin-top: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
         .stack-child { aspect-ratio: 1 / 1; background: #000; border: 1px solid #3a3a3a; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 1px; }
@@ -52,25 +62,6 @@
         .thumb-cell.disabled { background: #121212; opacity: 0.2; }
         .audio-section { width: 100%; max-width: 600px; margin-top: 30px; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #ff3131; text-align: center; }
         .audio-head { display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .info-link {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            border: 1px solid #777;
-            color: #ddd;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            font-weight: bold;
-            background: #1f1f1f;
-        }
-        .tutorial-link {
-            color: #bdbdbd;
-            font-size: 0.85em;
-            text-decoration: none;
-        }
         .footer-note { margin-top: 20px; font-size: 0.75em; color: #888; }
         .bake-btn { background: #ff3131; color: #fff; padding: 15px 25px; font-weight: bold; border: none; cursor: pointer; border-radius: 8px; width: 100%; font-size: 1.1em; transition: 0.2s; margin-top: 15px; }
         .action-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 25px; width: 100%; max-width: 600px; }
@@ -88,13 +79,16 @@
         .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
         .modal-btn { border: 1px solid #666; background: #2a2a2a; color: #fff; border-radius: 6px; font-size: 0.8em; padding: 6px 10px; cursor: pointer; }
         .modal-btn.primary { background: #ff3131; border-color: #c52020; }
-        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; gap: 12px; } .frame-manager { width: 100%; padding: 10px; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; } .frame-thumbnail { width: 52px; height: 52px; } .controls { margin-bottom: 10px; } .controls button { max-width: 84px; padding: 7px 8px; font-size: 0.8em; } .brightness-control, #grid { max-width: 340px; } .brightness-control { margin-bottom: 10px; } .action-buttons { margin-top: 14px; } .audio-section { margin-top: 16px; padding: 14px; } }
+        .toast { position: fixed; right: 14px; bottom: 14px; background: #1f1f1f; border: 1px solid #444; color: #f1f1f1; padding: 9px 12px; border-radius: 8px; font-size: 0.8em; opacity: 0; transform: translateY(10px); transition: 0.2s; z-index: 1200; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; gap: 12px; } .frame-manager { width: 100%; padding: 10px; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; align-items: stretch; } .stack-item { width: 132px; min-width: 132px; max-width: 132px; } .stack-actions { justify-content: flex-start; } .frame-thumbnail { width: 86%; height: auto; } .controls { margin-bottom: 10px; } .controls button { max-width: 84px; padding: 7px 8px; font-size: 0.8em; } .brightness-control, #grid { max-width: 340px; } .brightness-control { margin-bottom: 10px; } .action-buttons { margin-top: 14px; } .audio-section { margin-top: 16px; padding: 14px; } }
     </style>
 </head>
 <body>
     <div class="top-nav">
         <a class="active" href="index.html">Glyph Composer</a>
         <a href="gallery.html">Gallery</a>
+        <a href="tutorial.html">Tutorial</a>
     </div>
     <h1>Glyph Composer</h1>
     <div class="subtitle">Nothing Phone 4a Pro (60 FPS)</div>
@@ -109,35 +103,61 @@
                 <button onclick="addFrame()">+ New</button>
                 <button onclick="copyFrame()">+ Copy</button>
                 <button onclick="deleteFrame()">Delete</button>
+                <button onclick="undo()">Undo</button>
+                <button onclick="redo()">Redo</button>
             </div>
             <div class="brightness-control">
                 <div class="brightness-header"><span>Brush Brightness</span><span id="brightnessValText">100%</span></div>
                 <input type="range" id="brightnessSlider" class="brightness-slider" min="0" max="100" value="100" oninput="updateBrightness(this.value)">
             </div>
+            <div class="tools-control">
+                <div class="tool-row">
+                    <button class="tool-btn active" id="tool_draw" onclick="setTool('draw')" title="Draw">Draw</button>
+                    <button class="tool-btn" id="tool_erase" onclick="setTool('erase')" title="Erase">Erase</button>
+                    <button class="tool-btn" id="tool_fill" onclick="setTool('fill')" title="Flood fill">Fill</button>
+                    <button class="tool-btn" id="tool_line" onclick="setTool('line')" title="Line tool">Line</button>
+                    <button class="tool-btn" id="tool_pick" onclick="pickCurrentFrameBrightness()" title="Pick average frame brightness">Pick</button>
+                </div>
+                <div class="tools-meta">
+                    <label class="tools-toggle"><input type="checkbox" id="mirrorX" onchange="setMirror('x', this.checked)">Mirror X</label>
+                    <label class="tools-toggle"><input type="checkbox" id="mirrorY" onchange="setMirror('y', this.checked)">Mirror Y</label>
+                    <label class="tools-toggle"><input type="checkbox" id="onionSkin" onchange="toggleOnionSkin(this.checked)">Onion</label>
+                </div>
+            </div>
             <div id="grid"></div>
         </div>
-        <div class="frame-manager"><h3>Timeline (Stacks)</h3><div id="frameList" class="frame-list"></div></div>
+        <div class="frame-manager">
+            <h3>Timeline (Stacks)</h3>
+            <div class="timeline-tools">
+                <button onclick="selectAllStacks()">Select All</button>
+                <button onclick="clearStackSelection()">Clear</button>
+                <button onclick="deleteSelectedStacks()">Delete Selected</button>
+                <button onclick="duplicateSelectedStacks()">Duplicate Selected</button>
+            </div>
+            <div id="frameList" class="frame-list"></div>
+        </div>
     </div>
 
     <div class="action-buttons">
         <button class="import-btn" onclick="document.getElementById('jsonInput').click()">Load JSON</button>
         <button class="import-btn" onclick="exportJSON()">Export JSON</button>
+        <button class="import-btn" onclick="exportProject()">Export .glyphproj</button>
+        <button class="import-btn" onclick="document.getElementById('projectInput').click()">Load .glyphproj</button>
     </div>
 
     <div class="audio-section">
         <div class="audio-head">
             <h3 style="margin:0;">Export Ringtone</h3>
-            <a class="info-link" href="file:///C:/Users/Sven/Downloads/composer%20new/tutorial.html" title="Tutorial for .ogg">i</a>
-            <a class="tutorial-link" href="file:///C:/Users/Sven/Downloads/composer%20new/tutorial.html">Tutorial for .ogg</a>
         </div>
         <p style="font-size: 0.8em; color: #888;">Select your .ogg file to bake the animation into the file metadata.</p>
-        <input type="text" id="titleInput" placeholder="Rintone title / Filename." style="width:100%; max-width: 420px; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1e1e; color: #fff;">
+        <input type="text" id="titleInput" placeholder="Ringtone title / Filename." style="width:100%; max-width: 420px; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1e1e; color: #fff;">
         <input type="file" id="audioInput" accept=".ogg,.opus" style="margin-bottom: 10px; color: white;">
         <button class="bake-btn" onclick="bakeOgg()">Bake &amp; Download OGG</button>
     </div>
     <div class="footer-note">&copy; its.sveennn</div>
 
     <input type="file" id="jsonInput" style="display:none" accept=".json" onchange="importJSON(event)">
+    <input type="file" id="projectInput" style="display:none" accept=".glyphproj,.json" onchange="importProject(event)">
     <div id="durationModalBackdrop" class="modal-backdrop" onclick="onDurationBackdropClick(event)">
         <div class="modal">
             <div class="modal-title">Set Frame Duration</div>
@@ -160,6 +180,7 @@
             </div>
         </div>
     </div>
+    <div id="toast" class="toast"></div>
 
     <script>
         const TOTAL_PIXELS = 169;
@@ -193,6 +214,19 @@
         let lastActiveFrame = -1;
         const expandedStacks = new Set();
         let durationModalStackStart = null;
+        let selectedStackStarts = new Set();
+        let currentTool = 'draw';
+        let mirrorX = false;
+        let mirrorY = false;
+        let onionSkinEnabled = false;
+        let lineStartIndex = null;
+        let mouseDown = false;
+        let dragPaintMode = null;
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_HISTORY = 80;
+        let saveDebounce = null;
+        const AUTOSAVE_KEY = 'glyphComposerAutosaveV2';
 
         function updateBrightness(p) {
             const pct = Math.max(0, Math.min(100, Number(p) || 0));
@@ -200,30 +234,265 @@
             selectedBrightness = Math.round((pct / 100) * 4095);
         }
 
+        function showToast(text) {
+            const el = document.getElementById('toast');
+            if (!el) return;
+            el.textContent = text;
+            el.classList.add('show');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(() => el.classList.remove('show'), 1700);
+        }
+
+        function snapshotState() {
+            return {
+                frames: frames.map(f => f.slice()),
+                frameGroupIds: frameGroupIds.slice(),
+                currentFrame
+            };
+        }
+
+        function applySnapshot(snap) {
+            frames = snap.frames.map(f => f.slice());
+            frameGroupIds = snap.frameGroupIds.slice();
+            currentFrame = Math.max(0, Math.min((snap.currentFrame ?? 0), frames.length - 1));
+            expandedStacks.clear();
+            renderUI();
+        }
+
+        function pushUndo(label = '') {
+            undoStack.push(snapshotState());
+            if (undoStack.length > MAX_HISTORY) undoStack.shift();
+            redoStack = [];
+        }
+
+        function undo() {
+            if (!undoStack.length) return showToast('Nothing to undo');
+            redoStack.push(snapshotState());
+            const snap = undoStack.pop();
+            applySnapshot(snap);
+            showToast('Undo');
+        }
+
+        function redo() {
+            if (!redoStack.length) return showToast('Nothing to redo');
+            undoStack.push(snapshotState());
+            const snap = redoStack.pop();
+            applySnapshot(snap);
+            showToast('Redo');
+        }
+
+        function queueAutosave() {
+            clearTimeout(saveDebounce);
+            saveDebounce = setTimeout(saveProjectState, 250);
+        }
+
+        function saveProjectState() {
+            try {
+                const payload = {
+                    version: 2,
+                    title: document.getElementById('titleInput')?.value || '',
+                    brightness: selectedBrightness,
+                    currentFrame,
+                    frames,
+                    frameGroupIds,
+                    nextFrameGroupId
+                };
+                localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+            } catch {}
+        }
+
+        function restoreAutosaveIfAny() {
+            try {
+                const raw = localStorage.getItem(AUTOSAVE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (!data || !Array.isArray(data.frames) || !data.frames.length) return;
+                const ok = confirm('Restore previous autosaved project?');
+                if (!ok) return;
+                frames = data.frames.map(normalizeFrame);
+                frameGroupIds = Array.isArray(data.frameGroupIds) ? data.frameGroupIds.slice() : frames.map((_, i) => i);
+                nextFrameGroupId = Number.isFinite(data.nextFrameGroupId) ? data.nextFrameGroupId : (Math.max(...frameGroupIds, 0) + 1);
+                currentFrame = Math.max(0, Math.min(Number(data.currentFrame) || 0, frames.length - 1));
+                selectedBrightness = Math.max(0, Math.min(4095, Number(data.brightness) || 4095));
+                const slider = document.getElementById('brightnessSlider');
+                if (slider) slider.value = String(Math.round((selectedBrightness / 4095) * 100));
+                updateBrightness(Math.round((selectedBrightness / 4095) * 100));
+                const titleInput = document.getElementById('titleInput');
+                if (titleInput && typeof data.title === 'string') titleInput.value = data.title;
+                undoStack = [];
+                redoStack = [];
+                renderUI();
+                showToast('Autosave restored');
+            } catch {}
+        }
+
+        function setTool(tool) {
+            currentTool = tool;
+            ['draw','erase','fill','line'].forEach(t => {
+                const el = document.getElementById(`tool_${t}`);
+                if (el) el.classList.toggle('active', t === tool);
+            });
+            lineStartIndex = null;
+        }
+
+        function setMirror(axis, val) {
+            if (axis === 'x') mirrorX = !!val;
+            if (axis === 'y') mirrorY = !!val;
+        }
+
+        function toggleOnionSkin(v) {
+            onionSkinEnabled = !!v;
+            renderGridFrame(currentFrame);
+        }
+
+        function indexToCoord(i) { return { x: i % 13, y: Math.floor(i / 13) }; }
+        function coordToIndex(x, y) { return y * 13 + x; }
+
+        function getMirrorTargets(i) {
+            const t = new Set([i]);
+            const { x, y } = indexToCoord(i);
+            const mx = 12 - x;
+            const my = 12 - y;
+            if (mirrorX) t.add(coordToIndex(mx, y));
+            if (mirrorY) t.add(coordToIndex(x, my));
+            if (mirrorX && mirrorY) t.add(coordToIndex(mx, my));
+            return [...t].filter(idx => idx >= 0 && idx < TOTAL_PIXELS && LED_MASK[idx] === 1);
+        }
+
+        function setCellsValue(indices, value) {
+            let changed = false;
+            for (const idx of indices) {
+                const v = Math.max(0, Math.min(4095, value));
+                if (frames[currentFrame][idx] !== v) {
+                    frames[currentFrame][idx] = v;
+                    changed = true;
+                }
+            }
+            if (changed) renderGridFrame(currentFrame);
+            return changed;
+        }
+
+        function floodFill(startIdx, fillValue) {
+            const frame = frames[currentFrame];
+            const target = frame[startIdx];
+            if (target === fillValue) return false;
+            const q = [startIdx];
+            const seen = new Set([startIdx]);
+            let changed = false;
+            while (q.length) {
+                const idx = q.pop();
+                if (LED_MASK[idx] !== 1) continue;
+                if (frame[idx] !== target) continue;
+                frame[idx] = fillValue;
+                changed = true;
+                const { x, y } = indexToCoord(idx);
+                const n = [[x+1,y],[x-1,y],[x,y+1],[x,y-1]];
+                for (const [nx, ny] of n) {
+                    if (nx < 0 || ny < 0 || nx > 12 || ny > 12) continue;
+                    const ni = coordToIndex(nx, ny);
+                    if (!seen.has(ni)) { seen.add(ni); q.push(ni); }
+                }
+            }
+            if (changed) renderGridFrame(currentFrame);
+            return changed;
+        }
+
+        function lineIndices(a, b) {
+            const out = [];
+            const p1 = indexToCoord(a), p2 = indexToCoord(b);
+            let x0 = p1.x, y0 = p1.y, x1 = p2.x, y1 = p2.y;
+            const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0);
+            const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+            let err = dx + dy;
+            while (true) {
+                const idx = coordToIndex(x0, y0);
+                if (LED_MASK[idx] === 1) out.push(idx);
+                if (x0 === x1 && y0 === y1) break;
+                const e2 = 2 * err;
+                if (e2 >= dy) { err += dy; x0 += sx; }
+                if (e2 <= dx) { err += dx; y0 += sy; }
+            }
+            return out;
+        }
+
+        function pickCurrentFrameBrightness() {
+            const vals = frames[currentFrame].filter((v, i) => LED_MASK[i] === 1 && v > 0);
+            const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0) / vals.length) : 4095;
+            selectedBrightness = avg;
+            const pct = Math.round((avg / 4095) * 100);
+            const slider = document.getElementById('brightnessSlider');
+            if (slider) slider.value = String(pct);
+            updateBrightness(pct);
+            showToast(`Picked ${pct}%`);
+        }
+
         function ensureGrid() {
             if (cellElements.length > 0) return;
             const grid = document.getElementById('grid');
             grid.innerHTML = "";
             cellElements = new Array(TOTAL_PIXELS);
+            grid.oncontextmenu = (e) => e.preventDefault();
             for (let i = 0; i < TOTAL_PIXELS; i++) {
                 const cell = document.createElement('div');
                 if (LED_MASK[i] === 0) {
                     cell.className = 'cell disabled';
                 } else {
                     cell.className = 'cell';
-                    cell.onclick = () => {
-                        frames[currentFrame][i] = (frames[currentFrame][i] === selectedBrightness) ? 0 : selectedBrightness;
-                        renderUI();
+                    cell.onmousedown = (e) => {
+                        e.preventDefault();
+                        mouseDown = true;
+                        if (currentTool === 'line') {
+                            if (lineStartIndex === null) {
+                                lineStartIndex = i;
+                                showToast('Line start set');
+                            } else {
+                                pushUndo('line');
+                                const indices = lineIndices(lineStartIndex, i).flatMap(getMirrorTargets);
+                                setCellsValue(indices, selectedBrightness);
+                                lineStartIndex = null;
+                                queueAutosave();
+                                renderUI();
+                            }
+                            return;
+                        }
+                        if (currentTool === 'fill') {
+                            pushUndo('fill');
+                            const fillVal = (e.button === 2 || currentTool === 'erase') ? 0 : selectedBrightness;
+                            floodFill(i, fillVal);
+                            queueAutosave();
+                            renderUI();
+                            return;
+                        }
+                        pushUndo('paint');
+                        dragPaintMode = (e.button === 2 || currentTool === 'erase') ? 'erase' : (currentTool === 'erase' ? 'erase' : 'draw');
+                        const value = dragPaintMode === 'erase' ? 0 : selectedBrightness;
+                        setCellsValue(getMirrorTargets(i), value);
+                    };
+                    cell.onmouseenter = () => {
+                        if (!mouseDown) return;
+                        if (currentTool === 'draw' || currentTool === 'erase') {
+                            const value = dragPaintMode === 'erase' ? 0 : selectedBrightness;
+                            setCellsValue(getMirrorTargets(i), value);
+                        }
                     };
                 }
                 cellElements[i] = cell;
                 grid.appendChild(cell);
             }
+            window.addEventListener('mouseup', () => {
+                if (!mouseDown) return;
+                mouseDown = false;
+                dragPaintMode = null;
+                queueAutosave();
+                renderUI();
+            });
         }
 
         function renderGridFrame(frameIndex) {
             ensureGrid();
             const frame = frames[frameIndex] || frames[0] || new Array(TOTAL_PIXELS).fill(0);
+            const prev = frameIndex > 0 ? frames[frameIndex - 1] : null;
+            const next = frameIndex < frames.length - 1 ? frames[frameIndex + 1] : null;
             for (let i = 0; i < TOTAL_PIXELS; i++) {
                 const cell = cellElements[i];
                 if (!cell || LED_MASK[i] === 0) continue;
@@ -235,6 +504,15 @@
                 } else {
                     cell.style.backgroundColor = "#000";
                     cell.style.boxShadow = "none";
+                }
+                if (onionSkinEnabled && value === 0) {
+                    const pv = prev ? (prev[i] || 0) : 0;
+                    const nv = next ? (next[i] || 0) : 0;
+                    const ov = Math.max(pv, nv);
+                    if (ov > 0) {
+                        const a = Math.max(0.08, (ov / 4095) * 0.25);
+                        cell.style.backgroundColor = `rgba(255,120,120,${a})`;
+                    }
                 }
             }
         }
@@ -267,6 +545,7 @@
 
         function applyRunDurationByStart(stackStart, wantedMs) {
             if (!Array.isArray(frames) || frames.length === 0) return;
+            pushUndo('duration');
             stopPreview(true);
             ensureGroupIntegrity();
             const run = getFrameRunBounds(stackStart);
@@ -286,6 +565,7 @@
 
             currentFrame = run.start;
             expandedStacks.clear();
+            queueAutosave();
             renderUI();
         }
 
@@ -396,6 +676,7 @@
 
         function deleteStack(start, end) {
             if (frames.length <= 1) return;
+            pushUndo('delete stack');
             stopPreview(true);
             ensureGroupIntegrity();
             const count = end - start + 1;
@@ -405,6 +686,107 @@
             if (frameGroupIds.length === 0) frameGroupIds.push(nextFrameGroupId++);
             currentFrame = Math.max(0, Math.min(currentFrame, frames.length - 1));
             expandedStacks.clear();
+            selectedStackStarts.clear();
+            queueAutosave();
+            renderUI();
+        }
+
+        function splitStack(start) {
+            const run = getFrameRunBounds(start);
+            if (run.repeats <= 1) return showToast('Stack has only 1 frame');
+            pushUndo('split stack');
+            const splitAt = run.start + Math.floor(run.repeats / 2);
+            const newId = nextFrameGroupId++;
+            for (let i = splitAt; i <= run.end; i++) frameGroupIds[i] = newId;
+            expandedStacks.clear();
+            queueAutosave();
+            renderUI();
+            showToast('Stack split');
+        }
+
+        function mergeStackWithNext(start) {
+            const stacks = buildFrameStacks();
+            const idx = stacks.findIndex(s => s.start === start);
+            if (idx < 0 || idx === stacks.length - 1) return showToast('No next stack');
+            const a = stacks[idx];
+            const b = stacks[idx + 1];
+            pushUndo('merge stacks');
+            for (let i = b.start; i <= b.end; i++) frameGroupIds[i] = a.groupId;
+            expandedStacks.delete(a.start);
+            expandedStacks.delete(b.start);
+            queueAutosave();
+            renderUI();
+            showToast('Merged with next');
+        }
+
+        function duplicateStack(start) {
+            const run = getFrameRunBounds(start);
+            pushUndo('duplicate stack');
+            const clonedFrames = [];
+            const clonedGroups = [];
+            const newId = nextFrameGroupId++;
+            for (let i = run.start; i <= run.end; i++) {
+                clonedFrames.push(frames[i].slice());
+                clonedGroups.push(newId);
+            }
+            frames.splice(run.end + 1, 0, ...clonedFrames);
+            frameGroupIds.splice(run.end + 1, 0, ...clonedGroups);
+            queueAutosave();
+            renderUI();
+            showToast('Stack duplicated');
+        }
+
+        function selectAllStacks() {
+            selectedStackStarts = new Set(buildFrameStacks().map(s => s.start));
+            renderThumbnails();
+        }
+
+        function clearStackSelection() {
+            selectedStackStarts.clear();
+            renderThumbnails();
+        }
+
+        function deleteSelectedStacks() {
+            const starts = [...selectedStackStarts];
+            if (!starts.length) return showToast('No stack selected');
+            pushUndo('delete selected stacks');
+            const runs = starts.map(s => getFrameRunBounds(s)).sort((a,b)=>b.start-a.start);
+            for (const run of runs) {
+                frames.splice(run.start, run.repeats);
+                frameGroupIds.splice(run.start, run.repeats);
+            }
+            if (!frames.length) {
+                frames = [new Array(TOTAL_PIXELS).fill(0)];
+                frameGroupIds = [nextFrameGroupId++];
+            }
+            currentFrame = Math.max(0, Math.min(currentFrame, frames.length - 1));
+            selectedStackStarts.clear();
+            expandedStacks.clear();
+            queueAutosave();
+            renderUI();
+        }
+
+        function duplicateSelectedStacks() {
+            const starts = [...selectedStackStarts].sort((a,b)=>a-b);
+            if (!starts.length) return showToast('No stack selected');
+            pushUndo('duplicate selected stacks');
+            let offset = 0;
+            for (const s of starts) {
+                const run = getFrameRunBounds(s + offset);
+                const newId = nextFrameGroupId++;
+                const clonedFrames = [];
+                const clonedGroups = [];
+                for (let i = run.start; i <= run.end; i++) {
+                    clonedFrames.push(frames[i].slice());
+                    clonedGroups.push(newId);
+                }
+                frames.splice(run.end + 1, 0, ...clonedFrames);
+                frameGroupIds.splice(run.end + 1, 0, ...clonedGroups);
+                offset += run.repeats;
+            }
+            selectedStackStarts.clear();
+            expandedStacks.clear();
+            queueAutosave();
             renderUI();
         }
 
@@ -413,11 +795,14 @@
             list.innerHTML = '';
             stackPreviewByFrame = new Array(frames.length);
             childPreviewByFrame = new Array(frames.length);
-
             const stacks = buildFrameStacks();
+            const validStarts = new Set(stacks.map(s => s.start));
+            selectedStackStarts = new Set([...selectedStackStarts].filter(s => validStarts.has(s)));
+
             stacks.forEach((stack, stackIdx) => {
                 const item = document.createElement('div');
                 item.className = 'stack-item';
+                if (selectedStackStarts.has(stack.start)) item.classList.add('selected');
 
                 const head = document.createElement('div');
                 head.className = 'stack-head';
@@ -428,6 +813,16 @@
 
                 const actions = document.createElement('div');
                 actions.className = 'stack-actions';
+
+                const sel = document.createElement('input');
+                sel.type = 'checkbox';
+                sel.className = 'stack-select';
+                sel.checked = selectedStackStarts.has(stack.start);
+                sel.onchange = () => {
+                    if (sel.checked) selectedStackStarts.add(stack.start);
+                    else selectedStackStarts.delete(stack.start);
+                    item.classList.toggle('selected', sel.checked);
+                };
 
                 const toggleBtn = document.createElement('button');
                 const expanded = expandedStacks.has(stack.start);
@@ -446,8 +841,24 @@
                 durBtn.textContent = 'Duration';
                 durBtn.onclick = () => promptDurationForStack(stack.start);
 
+                const splitBtn = document.createElement('button');
+                splitBtn.textContent = 'Split';
+                splitBtn.onclick = () => splitStack(stack.start);
+
+                const mergeBtn = document.createElement('button');
+                mergeBtn.textContent = 'Merge';
+                mergeBtn.onclick = () => mergeStackWithNext(stack.start);
+
+                const dupBtn = document.createElement('button');
+                dupBtn.textContent = 'Dup';
+                dupBtn.onclick = () => duplicateStack(stack.start);
+
+                actions.appendChild(sel);
                 actions.appendChild(toggleBtn);
                 actions.appendChild(durBtn);
+                actions.appendChild(splitBtn);
+                actions.appendChild(mergeBtn);
+                actions.appendChild(dupBtn);
                 actions.appendChild(delBtn);
                 head.appendChild(title);
                 head.appendChild(actions);
@@ -503,33 +914,39 @@
         }
 
         function addFrame() {
+            pushUndo('add frame');
             stopPreview(true);
             ensureGroupIntegrity();
             frames.push(new Array(TOTAL_PIXELS).fill(0));
             frameGroupIds.push(nextFrameGroupId++);
             currentFrame = frames.length - 1;
             expandedStacks.clear();
+            queueAutosave();
             renderUI();
         }
 
         function copyFrame() {
+            pushUndo('copy frame');
             stopPreview(true);
             ensureGroupIntegrity();
             frames.splice(currentFrame + 1, 0, [...frames[currentFrame]]);
             frameGroupIds.splice(currentFrame + 1, 0, nextFrameGroupId++);
             currentFrame++;
             expandedStacks.clear();
+            queueAutosave();
             renderUI();
         }
 
         function deleteFrame() {
             if (frames.length > 1) {
+                pushUndo('delete frame');
                 stopPreview(true);
                 ensureGroupIntegrity();
                 frames.splice(currentFrame, 1);
                 frameGroupIds.splice(currentFrame, 1);
                 currentFrame = Math.min(currentFrame, frames.length - 1);
                 expandedStacks.clear();
+                queueAutosave();
                 renderUI();
             }
         }
@@ -1108,6 +1525,27 @@
             return true;
         }
 
+        function validateJsonData(json, mode = 'animation') {
+            if (!json || typeof json !== 'object') throw new Error('Invalid file: expected JSON object.');
+            if (!Array.isArray(json.frames)) throw new Error("Invalid file: missing 'frames' array.");
+            if (json.frames.length === 0) throw new Error('Invalid file: frames array is empty.');
+
+            for (let i = 0; i < json.frames.length; i++) {
+                const f = json.frames[i];
+                if (!f || !Array.isArray(f.p)) throw new Error(`Frame ${i + 1}: missing 'p' array.`);
+                if (f.p.length < 1) throw new Error(`Frame ${i + 1}: empty 'p' array.`);
+                for (let k = 0; k < f.p.length; k++) {
+                    const v = Number(f.p[k]);
+                    if (!Number.isFinite(v)) throw new Error(`Frame ${i + 1}: non-numeric pixel value.`);
+                }
+                if ('d' in f && (!Number.isFinite(Number(f.d)) || Number(f.d) <= 0)) {
+                    throw new Error(`Frame ${i + 1}: invalid duration.`);
+                }
+            }
+
+            return true;
+        }
+
         function exportJSON() {
             if (!Array.isArray(frames) || frames.length === 0) {
                 alert('No frames to export.');
@@ -1139,6 +1577,33 @@
             a.href = URL.createObjectURL(blob);
             a.download = `${title}.json`;
             a.click();
+            showToast('JSON exported');
+        }
+
+        function exportProject() {
+            if (!Array.isArray(frames) || frames.length === 0) return alert('No frames to export.');
+            ensureGroupIntegrity();
+            const titleInput = document.getElementById('titleInput');
+            const title = sanitizeFileName(titleInput ? titleInput.value : '') || 'glyph_project';
+            const payload = {
+                type: 'glyphproj',
+                version: 1,
+                fps: FPS,
+                width: 13,
+                height: 13,
+                title,
+                selectedBrightness,
+                currentFrame,
+                nextFrameGroupId,
+                frameGroupIds: frameGroupIds.slice(),
+                frames: frames.map(f => f.slice())
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${title}.glyphproj`;
+            a.click();
+            showToast('.glyphproj exported');
         }
 
         function importJSON(event) {
@@ -1150,13 +1615,54 @@
             reader.onload = (e) => {
                 try {
                     const json = JSON.parse(e.target.result);
+                    validateJsonData(json, 'animation');
+                    pushUndo('import json');
                     applyImportedJson(json);
+                    showToast('JSON imported');
                 } catch (err) {
                     alert('JSON import failed: ' + (err && err.message ? err.message : String(err)));
                 }
             };
 
             reader.onerror = () => alert('Could not read JSON file.');
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function importProject(event) {
+            stopPreview(true);
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if (!json || json.type !== 'glyphproj') throw new Error('Not a .glyphproj file.');
+                    if (!Array.isArray(json.frames)) throw new Error('Project missing frames.');
+                    if (!Array.isArray(json.frameGroupIds)) throw new Error('Project missing frameGroupIds.');
+                    if (json.frames.length !== json.frameGroupIds.length) throw new Error('Project frame/group mismatch.');
+                    pushUndo('import project');
+                    frames = json.frames.map(normalizeFrame);
+                    frameGroupIds = json.frameGroupIds.map(v => Number(v) || 0);
+                    nextFrameGroupId = Number.isFinite(json.nextFrameGroupId) ? json.nextFrameGroupId : (Math.max(...frameGroupIds, 0) + 1);
+                    currentFrame = Math.max(0, Math.min(Number(json.currentFrame) || 0, frames.length - 1));
+                    selectedBrightness = Math.max(0, Math.min(4095, Number(json.selectedBrightness) || 4095));
+                    const pct = Math.round((selectedBrightness / 4095) * 100);
+                    const slider = document.getElementById('brightnessSlider');
+                    if (slider) slider.value = String(pct);
+                    updateBrightness(pct);
+                    const titleInput = document.getElementById('titleInput');
+                    if (titleInput && typeof json.title === 'string') titleInput.value = json.title;
+                    selectedStackStarts.clear();
+                    expandedStacks.clear();
+                    queueAutosave();
+                    renderUI();
+                    showToast('Project imported');
+                } catch (err) {
+                    alert('Project import failed: ' + (err && err.message ? err.message : String(err)));
+                }
+            };
+            reader.onerror = () => alert('Could not read project file.');
             reader.readAsText(file);
             event.target.value = '';
         }
@@ -1194,6 +1700,7 @@
             frameGroupIds = newGroups;
             currentFrame = 0;
             expandedStacks.clear();
+            queueAutosave();
             renderUI();
         }
 
@@ -1218,7 +1725,12 @@
 
         window.onload = () => {
             renderUI();
+            restoreAutosaveIfAny();
             consumePendingGalleryImport();
+            const titleInput = document.getElementById('titleInput');
+            if (titleInput) {
+                titleInput.addEventListener('input', queueAutosave);
+            }
         };
 
         window.addEventListener('keydown', (event) => {
@@ -1230,6 +1742,8 @@
                 confirmDurationModal();
             }
         });
+
+        window.addEventListener('beforeunload', saveProjectState);
     </script>
 </body>
 </html>
