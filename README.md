@@ -7,12 +7,13 @@ Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pr
 - 13x13 matrix editor with LED mask
 - Per-pixel brightness (0-4095)
 - Frame timeline: Add, Copy, Delete, navigation
+- Frame duration control (set hold time in ms for the current frame-run)
 - Preview with device-like 60 FPS timing
 - JSON import (`Load JSON`)
 - JSON export (`Export JSON`)
 - Gallery page (`gallery.html`) with:
   - Shared animations from `gallery/gallery-index.json`
-  - Local JSON uploads (browser storage)
+  - Per-animation `Play` preview
   - `Use` button to open an animation in Glyph Composer
 - OGG export with metadata:
   - `AUTHOR=<glyph data>`
@@ -22,7 +23,7 @@ Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pr
 ## Files
 
 - [Glyph Composer](https://itssveennn.github.io/Nothing-Glyph-Composer/index.html) - main app
-- `gallery.html` - gallery page with upload/use flow
+- `gallery.html` - gallery page with play/use flow
 - `gallery/gallery-index.json` - shared gallery manifest
 - [Tutorial for .ogg](file:///C:/Users/Sven/Downloads/composer%20new/tutorial.html) - short guide for creating compatible OGG files
 
@@ -37,11 +38,9 @@ Web tool for creating glyph animations for the 13x13 matrix (Nothing Phone 4a Pr
 
 ## Gallery
 
-`gallery.html` has two sections:
+`gallery.html` only shows published animations loaded from `gallery/gallery-index.json`.
 
-- Shared Gallery: loaded from `gallery/gallery-index.json`
-- My Uploads: JSON files you upload in your browser
-
+`Play` previews an animation directly in the gallery card.
 `Use` sends the selected animation back to Glyph Composer and loads it automatically.
 
 To publish shared animations, add JSON files into `gallery/` and register them in `gallery/gallery-index.json`:

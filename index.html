@@ -13,11 +13,11 @@
         .top-nav a.active { color: #fff; border-color: #ff3131; }
         h1 { color: #ffffff; margin: 10px 0 5px 0; font-size: 1.5em; text-align: center; }
         .subtitle { color: #aaaaaa; margin-bottom: 20px; font-size: 0.85em; text-align: center; }
-        .main-container { display: flex; gap: 20px; max-width: 1000px; width: 100%; justify-content: center; flex-direction: row; }
+        .main-container { display: flex; gap: 20px; max-width: 1320px; width: 100%; justify-content: center; flex-direction: row; }
         .editor-section { flex-grow: 1; display: flex; flex-direction: column; align-items: center; max-width: 500px; width: 100%; }
         #frameInfo { font-size: 1.1em; font-weight: bold; margin-bottom: 12px; }
         .controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; width: 100%; margin-bottom: 15px; }
-        .controls button { padding: 10px 12px; cursor: pointer; border-radius: 6px; background: #333; color: white; border: 1px solid #555; transition: 0.2s; font-size: 0.9em; flex-grow: 1; max-width: 100px; touch-action: manipulation; }
+        .controls button { padding: 8px 10px; cursor: pointer; border-radius: 6px; background: #333; color: white; border: 1px solid #555; transition: 0.2s; font-size: 0.85em; flex-grow: 1; max-width: 92px; touch-action: manipulation; }
         #playBtn { background: #ff3131; border-color: #b00; font-weight: bold; }
         .brightness-control { width: 100%; max-width: 380px; margin-bottom: 15px; background: #1e1e1e; padding: 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .brightness-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95em; font-weight: bold; color: #ccc; }
@@ -35,10 +35,19 @@
         }
         .cell { background: #000; border: 1px solid #333; border-radius: 2px; cursor: pointer; transition: background 0.1s; }
         .cell.disabled { background: #121212; border-color: #1a1a1a; cursor: not-allowed; opacity: 0.3; }
-        .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 150px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 360px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
         .frame-list { width: 100%; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+        .stack-item { background: #151515; border: 1px solid #2f2f2f; border-radius: 8px; padding: 6px; }
+        .stack-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; }
+        .stack-title { font-size: 0.72em; color: #cfcfcf; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stack-actions { display: flex; gap: 4px; }
+        .stack-actions button { border: 1px solid #555; background: #292929; color: #eee; border-radius: 5px; font-size: 0.68em; padding: 2px 6px; cursor: pointer; }
         .frame-thumbnail { width: 100%; aspect-ratio: 1 / 1; background: #000; border: 2px solid #333; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; }
         .frame-thumbnail.active { border-color: #f44336; }
+        .stack-children { margin-top: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .stack-child { aspect-ratio: 1 / 1; background: #000; border: 1px solid #3a3a3a; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 1px; }
+        .stack-child.active { border-color: #f44336; box-shadow: inset 0 0 0 1px #f44336; }
+        .stack-note { margin-top: 4px; font-size: 0.65em; color: #8f8f8f; text-align: center; }
         .thumb-cell { background: #000; }
         .thumb-cell.disabled { background: #121212; opacity: 0.2; }
         .audio-section { width: 100%; max-width: 600px; margin-top: 30px; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #ff3131; text-align: center; }
@@ -66,7 +75,20 @@
         .bake-btn { background: #ff3131; color: #fff; padding: 15px 25px; font-weight: bold; border: none; cursor: pointer; border-radius: 8px; width: 100%; font-size: 1.1em; transition: 0.2s; margin-top: 15px; }
         .action-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 25px; width: 100%; max-width: 600px; }
         .import-btn { background: #2e7d32; color: #fff; padding: 15px; font-weight: bold; border: none; cursor: pointer; border-radius: 6px; font-size: 0.9em; flex: 1; }
-        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; } .frame-manager { width: 100%; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; } .frame-thumbnail { width: 60px; height: 60px; } }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+        .modal-backdrop.show { display: flex; }
+        .modal { width: 100%; max-width: 420px; background: #171717; border: 1px solid #3b3b3b; border-radius: 12px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+        .modal-title { font-size: 1em; font-weight: bold; margin-bottom: 8px; }
+        .modal-help { font-size: 0.78em; color: #9f9f9f; margin-bottom: 10px; }
+        .modal-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .modal-input { flex: 1; min-width: 0; padding: 8px; border-radius: 6px; border: 1px solid #555; background: #121212; color: #fff; }
+        .modal-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .modal-preset { border: 1px solid #5a5a5a; background: #272727; color: #e4e4e4; border-radius: 999px; font-size: 0.75em; padding: 4px 8px; cursor: pointer; }
+        .modal-preview { font-size: 0.78em; color: #d3d3d3; margin-bottom: 10px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .modal-btn { border: 1px solid #666; background: #2a2a2a; color: #fff; border-radius: 6px; font-size: 0.8em; padding: 6px 10px; cursor: pointer; }
+        .modal-btn.primary { background: #ff3131; border-color: #c52020; }
+        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; gap: 12px; } .frame-manager { width: 100%; padding: 10px; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; } .frame-thumbnail { width: 52px; height: 52px; } .controls { margin-bottom: 10px; } .controls button { max-width: 84px; padding: 7px 8px; font-size: 0.8em; } .brightness-control, #grid { max-width: 340px; } .brightness-control { margin-bottom: 10px; } .action-buttons { margin-top: 14px; } .audio-section { margin-top: 16px; padding: 14px; } }
     </style>
 </head>
 <body>
@@ -94,7 +116,7 @@
             </div>
             <div id="grid"></div>
         </div>
-        <div class="frame-manager"><h3>Timeline</h3><div id="frameList" class="frame-list"></div></div>
+        <div class="frame-manager"><h3>Timeline (Stacks)</h3><div id="frameList" class="frame-list"></div></div>
     </div>
 
     <div class="action-buttons">
@@ -116,6 +138,28 @@
     <div class="footer-note">&copy; its.sveennn</div>
 
     <input type="file" id="jsonInput" style="display:none" accept=".json" onchange="importJSON(event)">
+    <div id="durationModalBackdrop" class="modal-backdrop" onclick="onDurationBackdropClick(event)">
+        <div class="modal">
+            <div class="modal-title">Set Frame Duration</div>
+            <div class="modal-help">1 frame = 16.7ms at 60 FPS. This changes only the selected stack.</div>
+            <div class="modal-row">
+                <input id="durationModalInput" type="number" min="1" step="1" class="modal-input" oninput="updateDurationModalPreview()">
+            </div>
+            <div class="modal-presets">
+                <button class="modal-preset" onclick="setDurationModalPreset(17)">1f</button>
+                <button class="modal-preset" onclick="setDurationModalPreset(50)">50ms</button>
+                <button class="modal-preset" onclick="setDurationModalPreset(100)">100ms</button>
+                <button class="modal-preset" onclick="setDurationModalPreset(250)">250ms</button>
+                <button class="modal-preset" onclick="setDurationModalPreset(500)">500ms</button>
+                <button class="modal-preset" onclick="setDurationModalPreset(1000)">1000ms</button>
+            </div>
+            <div id="durationModalPreview" class="modal-preview"></div>
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="closeDurationModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="confirmDurationModal()">Apply</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const TOTAL_PIXELS = 169;
@@ -139,9 +183,16 @@
         ];
 
         let frames = [new Array(TOTAL_PIXELS).fill(0)];
+        let frameGroupIds = [0];
+        let nextFrameGroupId = 1;
         let currentFrame = 0;
         let selectedBrightness = 4095;
         let cellElements = [];
+        let stackPreviewByFrame = [];
+        let childPreviewByFrame = [];
+        let lastActiveFrame = -1;
+        const expandedStacks = new Set();
+        let durationModalStackStart = null;
 
         function updateBrightness(p) {
             const pct = Math.max(0, Math.min(100, Number(p) || 0));
@@ -188,6 +239,112 @@
             }
         }
 
+        function ensureGroupIntegrity() {
+            if (!Array.isArray(frameGroupIds)) frameGroupIds = [];
+            if (frameGroupIds.length !== frames.length) {
+                frameGroupIds = frames.map((_, idx) => idx);
+                nextFrameGroupId = frames.length;
+            }
+            if (frameGroupIds.length === 0) {
+                frameGroupIds = [0];
+                frames = [new Array(TOTAL_PIXELS).fill(0)];
+                nextFrameGroupId = 1;
+            }
+        }
+
+        function getFrameRunBounds(index) {
+            ensureGroupIntegrity();
+            if (!Array.isArray(frames) || frames.length === 0) return { start: 0, end: 0, repeats: 1, ms: FRAME_MS };
+            const clamped = Math.max(0, Math.min(frames.length - 1, index));
+            const gid = frameGroupIds[clamped];
+            let start = clamped;
+            let end = clamped;
+            while (start > 0 && frameGroupIds[start - 1] === gid) start--;
+            while (end < frames.length - 1 && frameGroupIds[end + 1] === gid) end++;
+            const repeats = (end - start + 1);
+            return { start, end, repeats, ms: repeats * FRAME_MS, groupId: gid };
+        }
+
+        function applyRunDurationByStart(stackStart, wantedMs) {
+            if (!Array.isArray(frames) || frames.length === 0) return;
+            stopPreview(true);
+            ensureGroupIntegrity();
+            const run = getFrameRunBounds(stackStart);
+            const wantedRepeats = Math.max(1, Math.round(Math.max(1, wantedMs) / FRAME_MS));
+            const diff = wantedRepeats - run.repeats;
+
+            if (diff > 0) {
+                const clones = Array.from({ length: diff }, () => frames[run.start].slice());
+                const cloneGroups = Array.from({ length: diff }, () => run.groupId);
+                frames.splice(run.end + 1, 0, ...clones);
+                frameGroupIds.splice(run.end + 1, 0, ...cloneGroups);
+            } else if (diff < 0) {
+                const removeCount = Math.min(run.repeats - 1, -diff);
+                frames.splice(run.end - removeCount + 1, removeCount);
+                frameGroupIds.splice(run.end - removeCount + 1, removeCount);
+            }
+
+            currentFrame = run.start;
+            expandedStacks.clear();
+            renderUI();
+        }
+
+        function promptDurationForStack(stackStart) {
+            const run = getFrameRunBounds(stackStart);
+            const currentMs = Math.max(1, Math.round(run.ms));
+            durationModalStackStart = stackStart;
+            const modalInput = document.getElementById('durationModalInput');
+            const modal = document.getElementById('durationModalBackdrop');
+            if (!modalInput || !modal) return;
+            modalInput.value = String(currentMs);
+            updateDurationModalPreview();
+            modal.classList.add('show');
+            modalInput.focus();
+            modalInput.select();
+        }
+
+        function setDurationModalPreset(ms) {
+            const modalInput = document.getElementById('durationModalInput');
+            if (!modalInput) return;
+            modalInput.value = String(Math.max(1, Math.round(Number(ms) || FRAME_MS)));
+            updateDurationModalPreview();
+        }
+
+        function updateDurationModalPreview() {
+            const modalInput = document.getElementById('durationModalInput');
+            const preview = document.getElementById('durationModalPreview');
+            if (!modalInput || !preview) return;
+            const ms = Math.max(1, Number(modalInput.value) || FRAME_MS);
+            const framesNeeded = Math.max(1, Math.round(ms / FRAME_MS));
+            const snappedMs = framesNeeded * FRAME_MS;
+            preview.innerText = `${ms.toFixed(0)} ms -> ${framesNeeded} frame${framesNeeded === 1 ? '' : 's'} (~${snappedMs.toFixed(1)} ms)`;
+        }
+
+        function closeDurationModal() {
+            const modal = document.getElementById('durationModalBackdrop');
+            if (modal) modal.classList.remove('show');
+            durationModalStackStart = null;
+        }
+
+        function confirmDurationModal() {
+            if (durationModalStackStart === null) return closeDurationModal();
+            const modalInput = document.getElementById('durationModalInput');
+            const wantedMs = Number(modalInput ? modalInput.value : 0);
+            if (!Number.isFinite(wantedMs) || wantedMs <= 0) {
+                alert('Please enter a valid number greater than 0.');
+                return;
+            }
+            const stackStart = durationModalStackStart;
+            closeDurationModal();
+            applyRunDurationByStart(stackStart, wantedMs);
+        }
+
+        function onDurationBackdropClick(event) {
+            if (event && event.target && event.target.id === 'durationModalBackdrop') {
+                closeDurationModal();
+            }
+        }
+
         function renderFrameInfo() {
             document.getElementById('frameInfo').innerText = `Frame: ${currentFrame + 1} / ${frames.length}`;
         }
@@ -198,42 +355,181 @@
             renderThumbnails();
         }
 
+        function updateActiveThumbnail() {
+            if (lastActiveFrame >= 0) {
+                const oldStack = stackPreviewByFrame[lastActiveFrame];
+                const oldChild = childPreviewByFrame[lastActiveFrame];
+                if (oldStack) oldStack.classList.remove('active');
+                if (oldChild) oldChild.classList.remove('active');
+            }
+            const stack = stackPreviewByFrame[currentFrame];
+            const child = childPreviewByFrame[currentFrame];
+            if (stack) stack.classList.add('active');
+            if (child) child.classList.add('active');
+            lastActiveFrame = currentFrame;
+        }
+
+        function buildFrameStacks() {
+            ensureGroupIntegrity();
+            const stacks = [];
+            if (!Array.isArray(frames) || frames.length === 0) return stacks;
+            let i = 0;
+            while (i < frames.length) {
+                let j = i + 1;
+                while (j < frames.length && frameGroupIds[j] === frameGroupIds[i]) j++;
+                stacks.push({ start: i, end: j - 1, repeats: j - i, groupId: frameGroupIds[i] });
+                i = j;
+            }
+            return stacks;
+        }
+
+        function renderFrameMiniGrid(container, frame, className = 'thumb-cell') {
+            for (let i = 0; i < TOTAL_PIXELS; i++) {
+                const c = document.createElement('div');
+                c.className = className + (LED_MASK[i] === 0 ? ' disabled' : '');
+                if (LED_MASK[i] === 1 && frame[i] > 0) {
+                    c.style.backgroundColor = `rgba(255,255,255,${frame[i] / 4095})`;
+                }
+                container.appendChild(c);
+            }
+        }
+
+        function deleteStack(start, end) {
+            if (frames.length <= 1) return;
+            stopPreview(true);
+            ensureGroupIntegrity();
+            const count = end - start + 1;
+            frames.splice(start, count);
+            frameGroupIds.splice(start, count);
+            if (frames.length === 0) frames.push(new Array(TOTAL_PIXELS).fill(0));
+            if (frameGroupIds.length === 0) frameGroupIds.push(nextFrameGroupId++);
+            currentFrame = Math.max(0, Math.min(currentFrame, frames.length - 1));
+            expandedStacks.clear();
+            renderUI();
+        }
+
         function renderThumbnails() {
             const list = document.getElementById('frameList');
             list.innerHTML = '';
-            frames.forEach((f, idx) => {
-                const thumb = document.createElement('div');
-                thumb.className = 'frame-thumbnail' + (idx === currentFrame ? ' active' : '');
-                thumb.onclick = () => { currentFrame = idx; renderUI(); };
-                for (let i = 0; i < TOTAL_PIXELS; i++) {
-                    const c = document.createElement('div');
-                    c.className = 'thumb-cell' + (LED_MASK[i] === 0 ? ' disabled' : '');
-                    if (f[i] > 0) c.style.backgroundColor = `rgba(255,255,255,${f[i] / 4095})`;
-                    thumb.appendChild(c);
+            stackPreviewByFrame = new Array(frames.length);
+            childPreviewByFrame = new Array(frames.length);
+
+            const stacks = buildFrameStacks();
+            stacks.forEach((stack, stackIdx) => {
+                const item = document.createElement('div');
+                item.className = 'stack-item';
+
+                const head = document.createElement('div');
+                head.className = 'stack-head';
+
+                const title = document.createElement('div');
+                title.className = 'stack-title';
+                title.textContent = `Frames ${stack.start + 1}-${stack.end + 1} (x${stack.repeats})`;
+
+                const actions = document.createElement('div');
+                actions.className = 'stack-actions';
+
+                const toggleBtn = document.createElement('button');
+                const expanded = expandedStacks.has(stack.start);
+                toggleBtn.textContent = expanded ? 'Hide' : 'Expand';
+                toggleBtn.onclick = () => {
+                    if (expandedStacks.has(stack.start)) expandedStacks.delete(stack.start);
+                    else expandedStacks.add(stack.start);
+                    renderThumbnails();
+                };
+
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Delete';
+                delBtn.onclick = () => deleteStack(stack.start, stack.end);
+
+                const durBtn = document.createElement('button');
+                durBtn.textContent = 'Duration';
+                durBtn.onclick = () => promptDurationForStack(stack.start);
+
+                actions.appendChild(toggleBtn);
+                actions.appendChild(durBtn);
+                actions.appendChild(delBtn);
+                head.appendChild(title);
+                head.appendChild(actions);
+
+                const stackPreview = document.createElement('div');
+                stackPreview.className = 'frame-thumbnail';
+                stackPreview.onclick = () => {
+                    stopPreview(true);
+                    currentFrame = stack.start;
+                    renderGridFrame(currentFrame);
+                    renderFrameInfo();
+                    updateActiveThumbnail();
+                };
+                renderFrameMiniGrid(stackPreview, frames[stack.start]);
+                for (let i = stack.start; i <= stack.end; i++) stackPreviewByFrame[i] = stackPreview;
+
+                item.appendChild(head);
+                item.appendChild(stackPreview);
+
+                if (expandedStacks.has(stack.start)) {
+                    const childrenWrap = document.createElement('div');
+                    childrenWrap.className = 'stack-children';
+                    const maxChildren = 120;
+                    const visibleCount = Math.min(stack.repeats, maxChildren);
+                    for (let offset = 0; offset < visibleCount; offset++) {
+                        const frameIdx = stack.start + offset;
+                        const child = document.createElement('div');
+                        child.className = 'stack-child';
+                        child.title = `Frame ${frameIdx + 1}`;
+                        child.onclick = () => {
+                            stopPreview(true);
+                            currentFrame = frameIdx;
+                            renderGridFrame(currentFrame);
+                            renderFrameInfo();
+                            updateActiveThumbnail();
+                        };
+                        renderFrameMiniGrid(child, frames[frameIdx]);
+                        childPreviewByFrame[frameIdx] = child;
+                        childrenWrap.appendChild(child);
+                    }
+                    item.appendChild(childrenWrap);
+                    if (stack.repeats > maxChildren) {
+                        const note = document.createElement('div');
+                        note.className = 'stack-note';
+                        note.textContent = `Showing ${maxChildren}/${stack.repeats} frames`;
+                        item.appendChild(note);
+                    }
                 }
-                list.appendChild(thumb);
+
+                list.appendChild(item);
             });
+            updateActiveThumbnail();
         }
 
         function addFrame() {
             stopPreview(true);
-            frames.splice(currentFrame + 1, 0, new Array(TOTAL_PIXELS).fill(0));
-            currentFrame++;
+            ensureGroupIntegrity();
+            frames.push(new Array(TOTAL_PIXELS).fill(0));
+            frameGroupIds.push(nextFrameGroupId++);
+            currentFrame = frames.length - 1;
+            expandedStacks.clear();
             renderUI();
         }
 
         function copyFrame() {
             stopPreview(true);
+            ensureGroupIntegrity();
             frames.splice(currentFrame + 1, 0, [...frames[currentFrame]]);
+            frameGroupIds.splice(currentFrame + 1, 0, nextFrameGroupId++);
             currentFrame++;
+            expandedStacks.clear();
             renderUI();
         }
 
         function deleteFrame() {
             if (frames.length > 1) {
                 stopPreview(true);
+                ensureGroupIntegrity();
                 frames.splice(currentFrame, 1);
+                frameGroupIds.splice(currentFrame, 1);
                 currentFrame = Math.min(currentFrame, frames.length - 1);
+                expandedStacks.clear();
                 renderUI();
             }
         }
@@ -283,6 +579,7 @@
                     currentFrame = nextIndex;
                     renderGridFrame(currentFrame);
                     renderFrameInfo();
+                    updateActiveThumbnail();
                 }
                 playRaf = requestAnimationFrame(tick);
             };
@@ -816,24 +1113,19 @@
                 alert('No frames to export.');
                 return;
             }
+            ensureGroupIntegrity();
 
             const titleInput = document.getElementById('titleInput');
             const title = sanitizeFileName(titleInput ? titleInput.value : "") || "glyph_animation";
 
             const packedFrames = [];
-            let runStart = 0;
-            while (runStart < frames.length) {
-                let runEnd = runStart + 1;
-                while (runEnd < frames.length && areFramesEqual(frames[runStart], frames[runEnd])) {
-                    runEnd++;
-                }
-                const repeats = runEnd - runStart;
+            const stacks = buildFrameStacks();
+            stacks.forEach((stack) => {
                 packedFrames.push({
-                    p: frameToActivePixels8Bit(frames[runStart]),
-                    d: Math.round(repeats * FRAME_MS)
+                    p: frameToActivePixels8Bit(frames[stack.start]),
+                    d: Math.round(stack.repeats * FRAME_MS)
                 });
-                runStart = runEnd;
-            }
+            });
 
             const payload = {
                 fps: FPS,
@@ -875,6 +1167,7 @@
             }
 
             const newFrames = [];
+            const newGroups = [];
             json.frames.forEach((f) => {
                 if (!f || !Array.isArray(f.p)) return;
                 const mapped = new Array(TOTAL_PIXELS).fill(0);
@@ -888,13 +1181,19 @@
 
                 const d = Number(f.d);
                 const reps = Math.max(1, Math.round((Number.isFinite(d) ? d : FRAME_MS) / FRAME_MS));
-                for (let r = 0; r < reps; r++) newFrames.push(mapped.slice());
+                const gid = nextFrameGroupId++;
+                for (let r = 0; r < reps; r++) {
+                    newFrames.push(mapped.slice());
+                    newGroups.push(gid);
+                }
             });
 
             if (newFrames.length === 0) throw new Error('No valid frames found in JSON.');
 
             frames = newFrames.map(normalizeFrame);
+            frameGroupIds = newGroups;
             currentFrame = 0;
+            expandedStacks.clear();
             renderUI();
         }
 
@@ -921,6 +1220,16 @@
             renderUI();
             consumePendingGalleryImport();
         };
+
+        window.addEventListener('keydown', (event) => {
+            const modal = document.getElementById('durationModalBackdrop');
+            if (!modal || !modal.classList.contains('show')) return;
+            if (event.key === 'Escape') {
+                closeDurationModal();
+            } else if (event.key === 'Enter') {
+                confirmDurationModal();
+            }
+        });
     </script>
 </body>
 </html>

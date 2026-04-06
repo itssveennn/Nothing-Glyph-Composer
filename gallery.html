@@ -13,23 +13,18 @@
         h1 { margin: 10px 0 6px 0; }
         .subtitle { color: #9a9a9a; font-size: 0.9em; margin-bottom: 20px; text-align: center; }
 
-        .actions { width: 100%; max-width: 1100px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-        .upload-btn, .clear-btn { background: #2e7d32; color: #fff; border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: bold; }
-        .clear-btn { background: #6b1d1d; }
-        .hint { color: #8f8f8f; font-size: 0.85em; }
-
-        .section { width: 100%; max-width: 1100px; margin-top: 10px; }
+        .section { width: 100%; max-width: 1100px; margin-top: 6px; }
         .section h2 { margin: 6px 0 10px 0; font-size: 1.05em; color: #ddd; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
         .card { background: #1a1a1a; border: 1px solid #343434; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
         .preview { width: 100%; aspect-ratio: 1 / 1; background: #000; border-radius: 8px; border: 1px solid #303030; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 3px; }
         .px { background: #000; border-radius: 1px; }
         .title { font-weight: bold; font-size: 0.95em; color: #fff; overflow-wrap: anywhere; }
         .meta { font-size: 0.8em; color: #989898; }
         .card-actions { display: flex; gap: 8px; }
-        .use-btn, .remove-btn { border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 0.85em; }
+        .play-btn, .use-btn { border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 0.85em; }
+        .play-btn { background: #353535; color: #fff; }
         .use-btn { background: #ff3131; color: #fff; font-weight: bold; }
-        .remove-btn { background: #393939; color: #ddd; }
         .footer { margin-top: 20px; font-size: 0.75em; color: #888; }
     </style>
 </head>
@@ -40,32 +35,19 @@
     </div>
 
     <h1>Gallery</h1>
-    <div class="subtitle">Upload JSON animations, preview them, and click "Use" to open them in Glyph Composer.</div>
-
-    <div class="actions">
-        <button class="upload-btn" onclick="document.getElementById('jsonUpload').click()">Upload JSON</button>
-        <button class="clear-btn" onclick="clearLocalGallery()">Clear My Uploads</button>
-        <div class="hint">My Uploads are stored in this browser only.</div>
-    </div>
-
-    <input type="file" id="jsonUpload" accept=".json" style="display:none" onchange="handleUpload(event)">
+    <div class="subtitle">Browse published animations and click "Use" to open one in Glyph Composer.</div>
 
     <div class="section">
-        <h2>Shared Gallery</h2>
+        <h2>Published Animations</h2>
         <div id="sharedGrid" class="grid"></div>
-    </div>
-
-    <div class="section">
-        <h2>My Uploads</h2>
-        <div id="localGrid" class="grid"></div>
     </div>
 
     <div class="footer">&copy; its.sveennn</div>
 
     <script>
         const TOTAL_PIXELS = 169;
-        const STORAGE_KEY = 'glyphComposerUserGallery';
         const PENDING_IMPORT_KEY = 'glyphComposerPendingImport';
+        const FRAME_MS = 1000 / 60;
 
         const LED_MASK = [
             0,0,0,0,1,1,1,1,1,0,0,0,0,
@@ -82,6 +64,8 @@
             0,0,1,1,1,1,1,1,1,1,1,0,0,
             0,0,0,0,1,1,1,1,1,0,0,0,0
         ];
+
+        let activePlayer = null;
 
         function sanitizeTitle(v) {
             const s = String(v || '').trim();
@@ -103,7 +87,7 @@
                     pIdx++;
                 }
                 const d = Number(f.d);
-                const reps = Math.max(1, Math.round((Number.isFinite(d) ? d : 16.666) / 16.666));
+                const reps = Math.max(1, Math.round((Number.isFinite(d) ? d : FRAME_MS) / FRAME_MS));
                 for (let r = 0; r < reps; r++) out.push(frame.slice());
             });
 
@@ -111,67 +95,65 @@
             return out;
         }
 
-        function frameFromJson(json) {
-            const frames = parseAnimationJson(json);
-            return frames[0] || new Array(TOTAL_PIXELS).fill(0);
-        }
-
-        function renderPreview(el, frame) {
-            el.innerHTML = '';
+        function createPreviewCells(previewEl) {
+            const cells = new Array(TOTAL_PIXELS);
+            previewEl.innerHTML = '';
             for (let i = 0; i < TOTAL_PIXELS; i++) {
                 const px = document.createElement('div');
                 px.className = 'px';
-                if (LED_MASK[i] === 1) {
-                    const v = Math.max(0, Math.min(4095, Number(frame[i]) || 0));
-                    if (v > 0) {
-                        const a = v / 4095;
-                        px.style.background = `rgba(255,255,255,${a})`;
-                    }
+                if (LED_MASK[i] === 0) px.style.background = '#101010';
+                previewEl.appendChild(px);
+                cells[i] = px;
+            }
+            return cells;
+        }
+
+        function paintFrame(cells, frame) {
+            for (let i = 0; i < TOTAL_PIXELS; i++) {
+                if (LED_MASK[i] === 0) continue;
+                const value = Math.max(0, Math.min(4095, Number(frame[i]) || 0));
+                if (value > 0) {
+                    const alpha = value / 4095;
+                    cells[i].style.background = `rgba(255,255,255,${alpha})`;
                 } else {
-                    px.style.background = '#101010';
+                    cells[i].style.background = '#000';
                 }
-                el.appendChild(px);
             }
         }
 
-        function createCard(item, parent, source, idx) {
-            const card = document.createElement('div');
-            card.className = 'card';
+        function stopActivePlayer() {
+            if (!activePlayer) return;
+            cancelAnimationFrame(activePlayer.rafId);
+            activePlayer.button.textContent = 'Play';
+            activePlayer = null;
+        }
 
-            const preview = document.createElement('div');
-            preview.className = 'preview';
-            renderPreview(preview, frameFromJson(item.json));
+        function startPlayer(player) {
+            stopActivePlayer();
+            player.start = performance.now();
+            player.button.textContent = 'Stop';
 
-            const title = document.createElement('div');
-            title.className = 'title';
-            title.textContent = sanitizeTitle(item.title);
+            const loop = (now) => {
+                if (activePlayer !== player) return;
+                const elapsed = now - player.start;
+                const idx = Math.floor(elapsed / FRAME_MS) % player.frames.length;
+                if (idx !== player.currentIndex) {
+                    player.currentIndex = idx;
+                    paintFrame(player.cells, player.frames[idx]);
+                }
+                player.rafId = requestAnimationFrame(loop);
+            };
 
-            const meta = document.createElement('div');
-            meta.className = 'meta';
-            meta.textContent = source === 'shared' ? 'Shared' : 'Local upload';
+            activePlayer = player;
+            player.rafId = requestAnimationFrame(loop);
+        }
 
-            const actions = document.createElement('div');
-            actions.className = 'card-actions';
-
-            const useBtn = document.createElement('button');
-            useBtn.className = 'use-btn';
-            useBtn.textContent = 'Use';
-            useBtn.onclick = () => useAnimation(item);
-            actions.appendChild(useBtn);
-
-            if (source === 'local') {
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.textContent = 'Remove';
-                removeBtn.onclick = () => removeLocalItem(idx);
-                actions.appendChild(removeBtn);
+        function togglePlayer(player) {
+            if (activePlayer === player) {
+                stopActivePlayer();
+                return;
             }
-
-            card.appendChild(preview);
-            card.appendChild(title);
-            card.appendChild(meta);
-            card.appendChild(actions);
-            parent.appendChild(card);
+            startPlayer(player);
         }
 
         function useAnimation(item) {
@@ -182,49 +164,62 @@
             window.location.href = 'index.html';
         }
 
-        function readLocalGallery() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return [];
-                const parsed = JSON.parse(raw);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch {
-                return [];
-            }
-        }
+        function createCard(item, parent) {
+            const frames = parseAnimationJson(item.json);
 
-        function writeLocalGallery(items) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-        }
+            const card = document.createElement('div');
+            card.className = 'card';
 
-        function renderLocalGallery() {
-            const grid = document.getElementById('localGrid');
-            grid.innerHTML = '';
-            const items = readLocalGallery();
-            items.forEach((item, idx) => createCard(item, grid, 'local', idx));
-            if (items.length === 0) {
-                const msg = document.createElement('div');
-                msg.className = 'meta';
-                msg.textContent = 'No local uploads yet.';
-                grid.appendChild(msg);
-            }
-        }
+            const preview = document.createElement('div');
+            preview.className = 'preview';
+            const cells = createPreviewCells(preview);
+            paintFrame(cells, frames[0]);
 
-        function removeLocalItem(idx) {
-            const items = readLocalGallery();
-            items.splice(idx, 1);
-            writeLocalGallery(items);
-            renderLocalGallery();
-        }
+            const title = document.createElement('div');
+            title.className = 'title';
+            title.textContent = sanitizeTitle(item.title);
 
-        function clearLocalGallery() {
-            localStorage.removeItem(STORAGE_KEY);
-            renderLocalGallery();
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.textContent = `${frames.length} frames`;
+
+            const actions = document.createElement('div');
+            actions.className = 'card-actions';
+
+            const playBtn = document.createElement('button');
+            playBtn.className = 'play-btn';
+            playBtn.textContent = 'Play';
+
+            const player = {
+                frames,
+                cells,
+                button: playBtn,
+                currentIndex: 0,
+                start: 0,
+                rafId: 0
+            };
+
+            playBtn.onclick = () => togglePlayer(player);
+
+            const useBtn = document.createElement('button');
+            useBtn.className = 'use-btn';
+            useBtn.textContent = 'Use';
+            useBtn.onclick = () => useAnimation(item);
+
+            actions.appendChild(playBtn);
+            actions.appendChild(useBtn);
+
+            card.appendChild(preview);
+            card.appendChild(title);
+            card.appendChild(meta);
+            card.appendChild(actions);
+            parent.appendChild(card);
         }
 
         async function loadSharedGallery() {
             const grid = document.getElementById('sharedGrid');
             grid.innerHTML = '';
+
             try {
                 const res = await fetch('gallery/gallery-index.json', { cache: 'no-store' });
                 if (!res.ok) throw new Error('No shared gallery index found.');
@@ -237,60 +232,28 @@
                         const fileRes = await fetch(`gallery/${entry.file}`, { cache: 'no-store' });
                         if (!fileRes.ok) continue;
                         const json = await fileRes.json();
-                        createCard({ title: entry.title || entry.file, json }, grid, 'shared', -1);
+                        createCard({ title: entry.title || entry.file, json }, grid);
                     } catch {
-                        // skip bad shared entries
+                        // skip invalid entries
                     }
                 }
 
                 if (!grid.children.length) {
                     const msg = document.createElement('div');
                     msg.className = 'meta';
-                    msg.textContent = 'No shared animations yet.';
+                    msg.textContent = 'No published animations yet.';
                     grid.appendChild(msg);
                 }
             } catch {
                 const msg = document.createElement('div');
                 msg.className = 'meta';
-                msg.textContent = 'Shared gallery unavailable. Add files to gallery/gallery-index.json.';
+                msg.textContent = 'Gallery unavailable. Add files to gallery/gallery-index.json.';
                 grid.appendChild(msg);
             }
         }
 
-        function handleUpload(event) {
-            const file = event.target.files && event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    parseAnimationJson(json);
-
-                    const name = file.name.replace(/\.json$/i, '');
-                    const title = sanitizeTitle(json.title || name);
-
-                    const items = readLocalGallery();
-                    items.unshift({ title, json });
-                    writeLocalGallery(items);
-                    renderLocalGallery();
-                } catch (err) {
-                    alert('Upload failed: ' + (err && err.message ? err.message : String(err)));
-                } finally {
-                    event.target.value = '';
-                }
-            };
-            reader.onerror = () => {
-                alert('Could not read JSON file.');
-                event.target.value = '';
-            };
-            reader.readAsText(file);
-        }
-
-        window.onload = async () => {
-            renderLocalGallery();
-            await loadSharedGallery();
-        };
+        window.addEventListener('beforeunload', stopActivePlayer);
+        window.onload = loadSharedGallery;
     </script>
 </body>
 </html>
