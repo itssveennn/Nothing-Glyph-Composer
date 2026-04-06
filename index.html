@@ -1,0 +1,840 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nothing Phone Glyph Composer Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #fff; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; touch-action: manipulation; }
+        h1 { color: #ffffff; margin: 10px 0 5px 0; font-size: 1.5em; text-align: center; }
+        .subtitle { color: #aaaaaa; margin-bottom: 20px; font-size: 0.85em; text-align: center; }
+        .main-container { display: flex; gap: 20px; max-width: 1000px; width: 100%; justify-content: center; flex-direction: row; }
+        .editor-section { flex-grow: 1; display: flex; flex-direction: column; align-items: center; max-width: 500px; width: 100%; }
+        #frameInfo { font-size: 1.1em; font-weight: bold; margin-bottom: 12px; }
+        .controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; width: 100%; margin-bottom: 15px; }
+        .controls button { padding: 10px 12px; cursor: pointer; border-radius: 6px; background: #333; color: white; border: 1px solid #555; transition: 0.2s; font-size: 0.9em; flex-grow: 1; max-width: 100px; touch-action: manipulation; }
+        #playBtn { background: #ff3131; border-color: #b00; font-weight: bold; }
+        .brightness-control { width: 100%; max-width: 380px; margin-bottom: 15px; background: #1e1e1e; padding: 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .brightness-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95em; font-weight: bold; color: #ccc; }
+        .brightness-slider { width: 100%; margin-bottom: 12px; cursor: pointer; accent-color: #fff; }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 2px;
+            width: 100%;
+            max-width: 380px;
+            aspect-ratio: 1 / 1;
+            background: #1e1e1e;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .cell { background: #000; border: 1px solid #333; border-radius: 2px; cursor: pointer; transition: background 0.1s; }
+        .cell.disabled { background: #121212; border-color: #1a1a1a; cursor: not-allowed; opacity: 0.3; }
+        .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 150px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        .frame-list { width: 100%; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+        .frame-thumbnail { width: 100%; aspect-ratio: 1 / 1; background: #000; border: 2px solid #333; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; }
+        .frame-thumbnail.active { border-color: #f44336; }
+        .thumb-cell { background: #000; }
+        .thumb-cell.disabled { background: #121212; opacity: 0.2; }
+        .audio-section { width: 100%; max-width: 600px; margin-top: 30px; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #ff3131; text-align: center; }
+        .bake-btn { background: #ff3131; color: #fff; padding: 15px 25px; font-weight: bold; border: none; cursor: pointer; border-radius: 8px; width: 100%; font-size: 1.1em; transition: 0.2s; margin-top: 15px; }
+        .action-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 25px; width: 100%; max-width: 600px; }
+        .import-btn { background: #2e7d32; color: #fff; padding: 15px; font-weight: bold; border: none; cursor: pointer; border-radius: 6px; font-size: 0.9em; flex: 1; }
+        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; } .frame-manager { width: 100%; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; } .frame-thumbnail { width: 60px; height: 60px; } }
+    </style>
+</head>
+<body>
+    <h1>Glyph Composer</h1>
+    <div class="subtitle">Nothing Phone 4a Pro (60 FPS)</div>
+
+    <div class="main-container">
+        <div class="editor-section">
+            <div id="frameInfo">Frame: 1 / 1</div>
+            <div class="controls">
+                <button onclick="prevFrame()">&lt; Back</button>
+                <button id="playBtn" onclick="playPreview()">Play</button>
+                <button onclick="nextFrame()">Next &gt;</button>
+                <button onclick="addFrame()">+ New</button>
+                <button onclick="copyFrame()">+ Copy</button>
+                <button onclick="deleteFrame()">Delete</button>
+            </div>
+            <div class="brightness-control">
+                <div class="brightness-header"><span>Brush Brightness</span><span id="brightnessValText">100%</span></div>
+                <input type="range" id="brightnessSlider" class="brightness-slider" min="0" max="100" value="100" oninput="updateBrightness(this.value)">
+            </div>
+            <div id="grid"></div>
+        </div>
+        <div class="frame-manager"><h3>Timeline</h3><div id="frameList" class="frame-list"></div></div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="import-btn" onclick="document.getElementById('csvInput').click()">Load CSV</button>
+        <button class="import-btn" onclick="document.getElementById('jsonInput').click()">Load JSON</button>
+    </div>
+
+    <div class="audio-section">
+        <h3>Export Ringtone</h3>
+        <p style="font-size: 0.8em; color: #888;">Select your .ogg file to bake the animation into the file metadata.</p>
+        <input type="text" id="titleInput" placeholder="Ringtone title (TITLE tag + filename)" style="width:100%; max-width: 420px; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1e1e; color: #fff;">
+        <input type="file" id="audioInput" accept=".ogg,.opus" style="margin-bottom: 10px; color: white;">
+        <button class="bake-btn" onclick="bakeOgg()">Bake &amp; Download OGG</button>
+    </div>
+
+    <input type="file" id="csvInput" style="display:none" accept=".csv, .txt" onchange="importCSV(event)">
+    <input type="file" id="jsonInput" style="display:none" accept=".json" onchange="importJSON(event)">
+
+    <script>
+        const TOTAL_PIXELS = 169;
+        const FPS = 60;
+        const FRAME_MS = 1000 / FPS;
+
+        const LED_MASK = [
+            0,0,0,0,1,1,1,1,1,0,0,0,0,
+            0,0,1,1,1,1,1,1,1,1,1,0,0,
+            0,1,1,1,1,1,1,1,1,1,1,1,0,
+            0,1,1,1,1,1,1,1,1,1,1,1,0,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,
+            0,1,1,1,1,1,1,1,1,1,1,1,0,
+            0,1,1,1,1,1,1,1,1,1,1,1,0,
+            0,0,1,1,1,1,1,1,1,1,1,0,0,
+            0,0,0,0,1,1,1,1,1,0,0,0,0
+        ];
+
+        let frames = [new Array(TOTAL_PIXELS).fill(0)];
+        let currentFrame = 0;
+        let selectedBrightness = 4095;
+        let cellElements = [];
+
+        function updateBrightness(p) {
+            const pct = Math.max(0, Math.min(100, Number(p) || 0));
+            document.getElementById('brightnessValText').innerText = pct + "%";
+            selectedBrightness = Math.round((pct / 100) * 4095);
+        }
+
+        function ensureGrid() {
+            if (cellElements.length > 0) return;
+            const grid = document.getElementById('grid');
+            grid.innerHTML = "";
+            cellElements = new Array(TOTAL_PIXELS);
+            for (let i = 0; i < TOTAL_PIXELS; i++) {
+                const cell = document.createElement('div');
+                if (LED_MASK[i] === 0) {
+                    cell.className = 'cell disabled';
+                } else {
+                    cell.className = 'cell';
+                    cell.onclick = () => {
+                        frames[currentFrame][i] = (frames[currentFrame][i] === selectedBrightness) ? 0 : selectedBrightness;
+                        renderUI();
+                    };
+                }
+                cellElements[i] = cell;
+                grid.appendChild(cell);
+            }
+        }
+
+        function renderGridFrame(frameIndex) {
+            ensureGrid();
+            const frame = frames[frameIndex] || frames[0] || new Array(TOTAL_PIXELS).fill(0);
+            for (let i = 0; i < TOTAL_PIXELS; i++) {
+                const cell = cellElements[i];
+                if (!cell || LED_MASK[i] === 0) continue;
+                const value = frame[i] || 0;
+                if (value > 0) {
+                    const alpha = value / 4095;
+                    cell.style.backgroundColor = `rgba(255,255,255,${alpha})`;
+                    cell.style.boxShadow = `0 0 8px rgba(255,255,255,${alpha})`;
+                } else {
+                    cell.style.backgroundColor = "#000";
+                    cell.style.boxShadow = "none";
+                }
+            }
+        }
+
+        function renderFrameInfo() {
+            document.getElementById('frameInfo').innerText = `Frame: ${currentFrame + 1} / ${frames.length}`;
+        }
+
+        function renderUI() {
+            renderGridFrame(currentFrame);
+            renderFrameInfo();
+            renderThumbnails();
+        }
+
+        function renderThumbnails() {
+            const list = document.getElementById('frameList');
+            list.innerHTML = '';
+            frames.forEach((f, idx) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'frame-thumbnail' + (idx === currentFrame ? ' active' : '');
+                thumb.onclick = () => { currentFrame = idx; renderUI(); };
+                for (let i = 0; i < TOTAL_PIXELS; i++) {
+                    const c = document.createElement('div');
+                    c.className = 'thumb-cell' + (LED_MASK[i] === 0 ? ' disabled' : '');
+                    if (f[i] > 0) c.style.backgroundColor = `rgba(255,255,255,${f[i] / 4095})`;
+                    thumb.appendChild(c);
+                }
+                list.appendChild(thumb);
+            });
+        }
+
+        function addFrame() {
+            stopPreview(true);
+            frames.splice(currentFrame + 1, 0, new Array(TOTAL_PIXELS).fill(0));
+            currentFrame++;
+            renderUI();
+        }
+
+        function copyFrame() {
+            stopPreview(true);
+            frames.splice(currentFrame + 1, 0, [...frames[currentFrame]]);
+            currentFrame++;
+            renderUI();
+        }
+
+        function deleteFrame() {
+            if (frames.length > 1) {
+                stopPreview(true);
+                frames.splice(currentFrame, 1);
+                currentFrame = Math.min(currentFrame, frames.length - 1);
+                renderUI();
+            }
+        }
+
+        function prevFrame() {
+            if (currentFrame > 0) {
+                stopPreview(true);
+                currentFrame--;
+                renderUI();
+            }
+        }
+
+        function nextFrame() {
+            if (currentFrame < frames.length - 1) {
+                stopPreview(true);
+                currentFrame++;
+                renderUI();
+            }
+        }
+
+        let playRaf = null;
+        let playStartTime = 0;
+
+        function stopPreview(updateButton = true) {
+            if (playRaf !== null) {
+                cancelAnimationFrame(playRaf);
+                playRaf = null;
+            }
+            if (updateButton) document.getElementById('playBtn').innerText = 'Play';
+        }
+
+        function playPreview() {
+            if (playRaf !== null) {
+                stopPreview(true);
+                return;
+            }
+            if (frames.length === 0) return;
+
+            document.getElementById('playBtn').innerText = 'Stop';
+            playStartTime = performance.now();
+
+            const tick = (now) => {
+                if (playRaf === null) return;
+                const elapsed = now - playStartTime;
+                const nextIndex = Math.floor(elapsed / FRAME_MS) % frames.length;
+                if (nextIndex !== currentFrame) {
+                    currentFrame = nextIndex;
+                    renderGridFrame(currentFrame);
+                    renderFrameInfo();
+                }
+                playRaf = requestAnimationFrame(tick);
+            };
+
+            playRaf = requestAnimationFrame(tick);
+        }
+
+        function getBase64(sourceFrames = frames) {
+            const csv = sourceFrames.map(f => f.join(',')).join('\r\n');
+            const compressed = pako.deflate(csv, { level: 9 });
+            let binary = '';
+            for (let i = 0; i < compressed.byteLength; i++) binary += String.fromCharCode(compressed[i]);
+            return btoa(binary);
+        }
+
+        function parseOggPages(bytes) {
+            const pages = [];
+            const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            let off = 0;
+
+            while (off + 27 <= bytes.length) {
+                if (
+                    bytes[off] !== 0x4f ||
+                    bytes[off + 1] !== 0x67 ||
+                    bytes[off + 2] !== 0x67 ||
+                    bytes[off + 3] !== 0x53
+                ) {
+                    throw new Error('Invalid OGG stream: missing OggS capture pattern.');
+                }
+
+                const version = bytes[off + 4];
+                if (version !== 0) throw new Error('Unsupported OGG bitstream version.');
+
+                const headerType = bytes[off + 5];
+                const granuleLow = view.getUint32(off + 6, true);
+                const granuleHigh = view.getUint32(off + 10, true);
+                const serial = view.getUint32(off + 14, true);
+                const sequence = view.getUint32(off + 18, true);
+                const segCount = bytes[off + 26];
+                const segTableStart = off + 27;
+                const segTableEnd = segTableStart + segCount;
+                if (segTableEnd > bytes.length) throw new Error('Corrupt OGG segment table.');
+
+                let payloadLen = 0;
+                for (let i = 0; i < segCount; i++) payloadLen += bytes[segTableStart + i];
+
+                const payloadStart = segTableEnd;
+                const payloadEnd = payloadStart + payloadLen;
+                if (payloadEnd > bytes.length) throw new Error('Corrupt OGG payload.');
+
+                pages.push({
+                    headerType,
+                    granuleLow,
+                    granuleHigh,
+                    serial,
+                    sequence,
+                    laces: Array.from(bytes.slice(segTableStart, segTableEnd)),
+                    payloadStart,
+                    payloadEnd
+                });
+                off = payloadEnd;
+            }
+
+            if (off !== bytes.length) throw new Error('Trailing bytes found in OGG stream.');
+            if (pages.length === 0) throw new Error('No OGG pages found.');
+            return pages;
+        }
+
+        function concatBytes(chunks) {
+            let total = 0;
+            for (const c of chunks) total += c.length;
+            const out = new Uint8Array(total);
+            let p = 0;
+            for (const c of chunks) {
+                out.set(c, p);
+                p += c.length;
+            }
+            return out;
+        }
+
+        function extractPackets(bytes, pages) {
+            const packets = [];
+            const granuleByPacketEnd = new Map();
+            let chunks = [];
+
+            pages.forEach((page) => {
+                let pos = page.payloadStart;
+                let lastCompleted = null;
+                for (let i = 0; i < page.laces.length; i++) {
+                    const segLen = page.laces[i];
+                    const seg = bytes.slice(pos, pos + segLen);
+                    pos += segLen;
+                    if (segLen > 0) chunks.push(seg);
+                    if (segLen < 255) {
+                        packets.push(concatBytes(chunks));
+                        chunks = [];
+                        lastCompleted = packets.length - 1;
+                    }
+                }
+
+                const hasKnownGranule = !(page.granuleLow === 0xffffffff && page.granuleHigh === 0xffffffff);
+                if (hasKnownGranule && lastCompleted !== null) {
+                    granuleByPacketEnd.set(lastCompleted, {
+                        low: page.granuleLow >>> 0,
+                        high: page.granuleHigh >>> 0
+                    });
+                }
+            });
+
+            if (chunks.length > 0) throw new Error('Corrupt OGG stream: unterminated packet.');
+            return { packets, granuleByPacketEnd };
+        }
+
+        function startsWithBytes(buf, sig) {
+            if (buf.length < sig.length) return false;
+            for (let i = 0; i < sig.length; i++) if (buf[i] !== sig[i]) return false;
+            return true;
+        }
+
+        function readU16LE(buf, off) {
+            return (buf[off] | (buf[off + 1] << 8)) >>> 0;
+        }
+
+        function readU32LE(buf, off) {
+            return (
+                (buf[off] >>> 0) |
+                ((buf[off + 1] << 8) >>> 0) |
+                ((buf[off + 2] << 16) >>> 0) |
+                ((buf[off + 3] << 24) >>> 0)
+            ) >>> 0;
+        }
+
+        function writeU32LE(num) {
+            const n = num >>> 0;
+            return new Uint8Array([
+                n & 0xff,
+                (n >>> 8) & 0xff,
+                (n >>> 16) & 0xff,
+                (n >>> 24) & 0xff
+            ]);
+        }
+
+        function readU64AsNumberLE(low, high) {
+            return (high * 4294967296) + low;
+        }
+
+        function getAudioDurationSecondsFromOgg(pages, packets, codec) {
+            let lastKnownGranule = null;
+            for (let i = pages.length - 1; i >= 0; i--) {
+                const gLow = pages[i].granuleLow >>> 0;
+                const gHigh = pages[i].granuleHigh >>> 0;
+                if (!(gLow === 0xffffffff && gHigh === 0xffffffff)) {
+                    lastKnownGranule = readU64AsNumberLE(gLow, gHigh);
+                    break;
+                }
+            }
+            if (lastKnownGranule === null) return 0;
+
+            if (codec === "vorbis") {
+                if (packets[0].length < 16) return 0;
+                const sampleRate = readU32LE(packets[0], 12);
+                if (!sampleRate) return 0;
+                return lastKnownGranule / sampleRate;
+            }
+
+            if (codec === "opus") {
+                if (packets[0].length < 12) return 0;
+                const preSkip = readU16LE(packets[0], 10);
+                const samples = Math.max(0, lastKnownGranule - preSkip);
+                return samples / 48000;
+            }
+
+            return 0;
+        }
+
+        function expandFramesToDuration(sourceFrames, durationSeconds) {
+            if (!Array.isArray(sourceFrames) || sourceFrames.length === 0) {
+                return [new Array(TOTAL_PIXELS).fill(0)];
+            }
+
+            const safeDuration = Math.max(0, Number(durationSeconds) || 0);
+            const requiredCount = Math.ceil(safeDuration * FPS);
+            const targetCount = Math.max(sourceFrames.length, requiredCount);
+
+            if (targetCount === sourceFrames.length) return sourceFrames;
+
+            const out = new Array(targetCount);
+            for (let i = 0; i < targetCount; i++) {
+                out[i] = sourceFrames[i % sourceFrames.length].slice();
+            }
+            return out;
+        }
+
+        function parseVorbisComment(packet) {
+            const sig = [0x03, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73];
+            if (!startsWithBytes(packet, sig)) throw new Error('Invalid Vorbis comment packet.');
+            let off = 7;
+            if (off + 4 > packet.length) throw new Error('Truncated Vorbis comment packet.');
+            const vendorLen = readU32LE(packet, off);
+            off += 4;
+            if (off + vendorLen > packet.length) throw new Error('Invalid Vorbis vendor length.');
+            const dec = new TextDecoder();
+            const vendor = dec.decode(packet.slice(off, off + vendorLen));
+            off += vendorLen;
+            if (off + 4 > packet.length) throw new Error('Truncated Vorbis comment count.');
+            const count = readU32LE(packet, off);
+            off += 4;
+            const comments = [];
+            for (let i = 0; i < count; i++) {
+                if (off + 4 > packet.length) throw new Error('Truncated Vorbis comment entry length.');
+                const len = readU32LE(packet, off);
+                off += 4;
+                if (off + len > packet.length) throw new Error('Invalid Vorbis comment entry length.');
+                comments.push(dec.decode(packet.slice(off, off + len)));
+                off += len;
+            }
+            return { vendor, comments };
+        }
+
+        function parseOpusTags(packet) {
+            const sig = [0x4f, 0x70, 0x75, 0x73, 0x54, 0x61, 0x67, 0x73];
+            if (!startsWithBytes(packet, sig)) throw new Error('Invalid OpusTags packet.');
+            let off = 8;
+            if (off + 4 > packet.length) throw new Error('Truncated OpusTags vendor length.');
+            const vendorLen = readU32LE(packet, off);
+            off += 4;
+            if (off + vendorLen > packet.length) throw new Error('Invalid OpusTags vendor length.');
+            const dec = new TextDecoder();
+            const vendor = dec.decode(packet.slice(off, off + vendorLen));
+            off += vendorLen;
+            if (off + 4 > packet.length) throw new Error('Truncated OpusTags comment count.');
+            const count = readU32LE(packet, off);
+            off += 4;
+            const comments = [];
+            for (let i = 0; i < count; i++) {
+                if (off + 4 > packet.length) throw new Error('Truncated OpusTags comment length.');
+                const len = readU32LE(packet, off);
+                off += 4;
+                if (off + len > packet.length) throw new Error('Invalid OpusTags comment length.');
+                comments.push(dec.decode(packet.slice(off, off + len)));
+                off += len;
+            }
+            return { vendor, comments };
+        }
+
+        function upsertComment(comments, key, value) {
+            const upperKey = String(key || "").toUpperCase();
+            const filtered = comments.filter(c => {
+                const eq = c.indexOf('=');
+                if (eq <= 0) return true;
+                return c.slice(0, eq).toUpperCase() !== upperKey;
+            });
+            filtered.push(`${upperKey}=${value}`);
+            return filtered;
+        }
+
+        function sanitizeFileName(name) {
+            const base = String(name || "").trim();
+            if (!base) return "";
+            return base.replace(/[\\/:*?"<>|]/g, "_").replace(/\s+/g, " ").trim();
+        }
+
+        function getFileBaseName(fileName) {
+            const n = String(fileName || "");
+            const dot = n.lastIndexOf(".");
+            return dot > 0 ? n.slice(0, dot) : n;
+        }
+
+        function buildVorbisCommentPacket(vendor, comments) {
+            const enc = new TextEncoder();
+            const sig = new Uint8Array([0x03, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+            const v = enc.encode(vendor || 'glyph-composer');
+            const chunks = [sig, writeU32LE(v.length), v, writeU32LE(comments.length)];
+            for (const c of comments) {
+                const bytes = enc.encode(c);
+                chunks.push(writeU32LE(bytes.length), bytes);
+            }
+            chunks.push(new Uint8Array([0x01]));
+            return concatBytes(chunks);
+        }
+
+        function buildOpusTagsPacket(vendor, comments) {
+            const enc = new TextEncoder();
+            const sig = new Uint8Array([0x4f, 0x70, 0x75, 0x73, 0x54, 0x61, 0x67, 0x73]);
+            const v = enc.encode(vendor || 'glyph-composer');
+            const chunks = [sig, writeU32LE(v.length), v, writeU32LE(comments.length)];
+            for (const c of comments) {
+                const bytes = enc.encode(c);
+                chunks.push(writeU32LE(bytes.length), bytes);
+            }
+            return concatBytes(chunks);
+        }
+
+        function buildPacketLaces(packetLen) {
+            if (packetLen === 0) return [0];
+            const laces = [];
+            let n = packetLen;
+            while (n >= 255) {
+                laces.push(255);
+                n -= 255;
+            }
+            if (n === 0) laces.push(0);
+            else laces.push(n);
+            return laces;
+        }
+
+        function makeCrcTable() {
+            const table = new Uint32Array(256);
+            for (let i = 0; i < 256; i++) {
+                let r = i << 24;
+                for (let j = 0; j < 8; j++) {
+                    if (r & 0x80000000) r = ((r << 1) ^ 0x04c11db7) >>> 0;
+                    else r = (r << 1) >>> 0;
+                }
+                table[i] = r >>> 0;
+            }
+            return table;
+        }
+
+        const OGG_CRC_TABLE = makeCrcTable();
+
+        function computeOggCrc(pageBytes) {
+            let crc = 0;
+            for (let i = 0; i < pageBytes.length; i++) {
+                const idx = ((crc >>> 24) ^ pageBytes[i]) & 0xff;
+                crc = ((crc << 8) ^ OGG_CRC_TABLE[idx]) >>> 0;
+            }
+            return crc >>> 0;
+        }
+
+        function serializePage(serial, sequence, headerType, granule, laces, payload) {
+            const header = new Uint8Array(27 + laces.length);
+            header[0] = 0x4f; header[1] = 0x67; header[2] = 0x67; header[3] = 0x53;
+            header[4] = 0;
+            header[5] = headerType & 0x07;
+            header[6] = granule.low & 0xff;
+            header[7] = (granule.low >>> 8) & 0xff;
+            header[8] = (granule.low >>> 16) & 0xff;
+            header[9] = (granule.low >>> 24) & 0xff;
+            header[10] = granule.high & 0xff;
+            header[11] = (granule.high >>> 8) & 0xff;
+            header[12] = (granule.high >>> 16) & 0xff;
+            header[13] = (granule.high >>> 24) & 0xff;
+            header[14] = serial & 0xff;
+            header[15] = (serial >>> 8) & 0xff;
+            header[16] = (serial >>> 16) & 0xff;
+            header[17] = (serial >>> 24) & 0xff;
+            header[18] = sequence & 0xff;
+            header[19] = (sequence >>> 8) & 0xff;
+            header[20] = (sequence >>> 16) & 0xff;
+            header[21] = (sequence >>> 24) & 0xff;
+            header[22] = 0; header[23] = 0; header[24] = 0; header[25] = 0;
+            header[26] = laces.length;
+            for (let i = 0; i < laces.length; i++) header[27 + i] = laces[i];
+
+            const page = concatBytes([header, payload]);
+            const crc = computeOggCrc(page);
+            page[22] = crc & 0xff;
+            page[23] = (crc >>> 8) & 0xff;
+            page[24] = (crc >>> 16) & 0xff;
+            page[25] = (crc >>> 24) & 0xff;
+            return page;
+        }
+
+        function rebuildOgg(packets, originalPages, granuleByPacketEnd, headerPacketCount) {
+            const outPages = [];
+            const serial = originalPages[0].serial >>> 0;
+            let sequence = originalPages[0].sequence >>> 0;
+            let isFirstPage = true;
+
+            let current = {
+                laces: [],
+                payload: [],
+                continued: false,
+                lastCompletedPacketIndex: null
+            };
+
+            const flushPage = (forceEos = false) => {
+                if (current.laces.length === 0) return;
+                const packetEnd = current.lastCompletedPacketIndex;
+                let granule = { low: 0xffffffff, high: 0xffffffff };
+                if (packetEnd !== null) {
+                    if (granuleByPacketEnd.has(packetEnd)) granule = granuleByPacketEnd.get(packetEnd);
+                    else if (packetEnd < headerPacketCount) granule = { low: 0, high: 0 };
+                }
+
+                let headerType = 0;
+                if (current.continued) headerType |= 0x01;
+                if (isFirstPage) headerType |= 0x02;
+                if (forceEos) headerType |= 0x04;
+
+                const payload = concatBytes(current.payload);
+                outPages.push(serializePage(serial, sequence, headerType, granule, current.laces, payload));
+                sequence++;
+                isFirstPage = false;
+                current = { laces: [], payload: [], continued: false, lastCompletedPacketIndex: null };
+            };
+
+            for (let pktIdx = 0; pktIdx < packets.length; pktIdx++) {
+                const packet = packets[pktIdx];
+                const laces = buildPacketLaces(packet.length);
+                let payloadOffset = 0;
+
+                for (let i = 0; i < laces.length; i++) {
+                    if (current.laces.length === 255) {
+                        flushPage(false);
+                        current.continued = true;
+                    }
+
+                    const segLen = laces[i];
+                    current.laces.push(segLen);
+                    if (segLen > 0) {
+                        current.payload.push(packet.slice(payloadOffset, payloadOffset + segLen));
+                        payloadOffset += segLen;
+                    }
+
+                    if (i === laces.length - 1) current.lastCompletedPacketIndex = pktIdx;
+                }
+            }
+
+            flushPage(true);
+            return concatBytes(outPages);
+        }
+
+        function injectGlyphMetadataIntoOgg(arrayBuffer, b64, title) {
+            const bytes = new Uint8Array(arrayBuffer);
+            const pages = parseOggPages(bytes);
+            const { packets, granuleByPacketEnd } = extractPackets(bytes, pages);
+            if (packets.length < 2) throw new Error('Invalid OGG stream: missing comment packet.');
+
+            const isVorbis = startsWithBytes(packets[0], [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+            const isOpus = startsWithBytes(packets[0], [0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64]);
+            if (!isVorbis && !isOpus) throw new Error('Unsupported OGG codec. Use OGG Vorbis or OGG Opus.');
+
+            const codec = isVorbis ? "vorbis" : "opus";
+            const durationSeconds = getAudioDurationSecondsFromOgg(pages, packets, codec);
+
+            if (isVorbis) {
+                const parsed = parseVorbisComment(packets[1]);
+                let comments = upsertComment(parsed.comments, 'AUTHOR', b64);
+                comments = upsertComment(comments, 'TITLE', title);
+                packets[1] = buildVorbisCommentPacket(parsed.vendor, comments);
+            } else {
+                const parsed = parseOpusTags(packets[1]);
+                let comments = upsertComment(parsed.comments, 'AUTHOR', b64);
+                comments = upsertComment(comments, 'TITLE', title);
+                packets[1] = buildOpusTagsPacket(parsed.vendor, comments);
+            }
+
+            const headerPacketCount = isVorbis ? 3 : 2;
+            return {
+                bytes: rebuildOgg(packets, pages, granuleByPacketEnd, headerPacketCount),
+                durationSeconds
+            };
+        }
+
+        async function bakeOgg() {
+            const fileInput = document.getElementById('audioInput');
+            const titleInput = document.getElementById('titleInput');
+            const file = fileInput.files[0];
+            if (!file) return alert('Please select an .ogg file first.');
+
+            const typedTitle = sanitizeFileName(titleInput ? titleInput.value : "");
+            const defaultTitle = sanitizeFileName(getFileBaseName(file.name)) || "glyph_ringtone";
+            const finalTitle = typedTitle || defaultTitle;
+            if (titleInput && !titleInput.value.trim()) titleInput.value = finalTitle;
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    const originalBytes = e.target.result;
+                    const bytesView = new Uint8Array(originalBytes);
+                    const pages = parseOggPages(bytesView);
+                    const packets = extractPackets(bytesView, pages).packets;
+                    const isVorbis = startsWithBytes(packets[0] || new Uint8Array(), [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+                    const isOpus = startsWithBytes(packets[0] || new Uint8Array(), [0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64]);
+                    const codec = isVorbis ? "vorbis" : (isOpus ? "opus" : "");
+                    if (!codec) throw new Error('Unsupported OGG codec. Use OGG Vorbis or OGG Opus.');
+
+                    const audioDurationSec = getAudioDurationSecondsFromOgg(pages, packets, codec);
+                    const exportFrames = expandFramesToDuration(frames, audioDurationSec);
+                    const b64 = getBase64(exportFrames);
+                    const result = injectGlyphMetadataIntoOgg(originalBytes, b64, finalTitle);
+                    const bakedBytes = result.bytes;
+
+                    const blob = new Blob([bakedBytes], { type: 'audio/ogg' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = finalTitle + '.ogg';
+                    a.click();
+                } catch (err) {
+                    alert('Baking failed: ' + (err && err.message ? err.message : String(err)));
+                }
+            };
+
+            reader.onerror = () => alert('Could not read the selected audio file.');
+            reader.readAsArrayBuffer(file);
+        }
+
+        function normalizeFrame(raw) {
+            const frame = new Array(TOTAL_PIXELS).fill(0);
+            const limit = Math.min(TOTAL_PIXELS, Array.isArray(raw) ? raw.length : 0);
+            for (let i = 0; i < limit; i++) {
+                const val = Math.max(0, Math.min(4095, Number(raw[i]) || 0));
+                frame[i] = LED_MASK[i] === 1 ? val : 0;
+            }
+            return frame;
+        }
+
+        function importCSV(event) {
+            stopPreview(true);
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const text = String(e.target.result || '');
+                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                const parsed = lines
+                    .map(line => line.split(/[;,]/).map(v => Number(v.trim())))
+                    .filter(arr => arr.length > 0);
+
+                if (parsed.length === 0) {
+                    alert('CSV contains no usable frames.');
+                    return;
+                }
+
+                frames = parsed.map(normalizeFrame);
+                currentFrame = 0;
+                renderUI();
+            };
+
+            reader.onerror = () => alert('Could not read CSV file.');
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function importJSON(event) {
+            stopPreview(true);
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if (!json || !Array.isArray(json.frames)) {
+                        throw new Error("JSON needs a 'frames' array.");
+                    }
+
+                    const newFrames = [];
+                    json.frames.forEach((f) => {
+                        if (!f || !Array.isArray(f.p)) return;
+                        const mapped = new Array(TOTAL_PIXELS).fill(0);
+                        let pIdx = 0;
+                        for (let i = 0; i < TOTAL_PIXELS; i++) {
+                            if (LED_MASK[i] !== 1) continue;
+                            const src = Number(f.p[pIdx] ?? 0);
+                            mapped[i] = Math.max(0, Math.min(4095, Math.round((src / 255) * 4095)));
+                            pIdx++;
+                        }
+
+                        const d = Number(f.d);
+                        const reps = Math.max(1, Math.round((Number.isFinite(d) ? d : FRAME_MS) / FRAME_MS));
+                        for (let r = 0; r < reps; r++) newFrames.push(mapped.slice());
+                    });
+
+                    if (newFrames.length === 0) throw new Error('No valid frames found in JSON.');
+
+                    frames = newFrames.map(normalizeFrame);
+                    currentFrame = 0;
+                    renderUI();
+                } catch (err) {
+                    alert('JSON import failed: ' + (err && err.message ? err.message : String(err)));
+                }
+            };
+
+            reader.onerror = () => alert('Could not read JSON file.');
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        window.onload = renderUI;
+    </script>
+</body>
+</html>
