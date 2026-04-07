@@ -44,25 +44,23 @@
         .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 460px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
         .frame-list { width: 100%; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; align-items: stretch; }
         .stack-item { background: #151515; border: 1px solid #2f2f2f; border-radius: 8px; padding: 6px; width: 100%; }
-        .stack-head { display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin-bottom: 6px; }
-        .stack-title { font-size: 0.72em; color: #cfcfcf; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .stack-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+        .stack-item.selected { border-color: #f44336; box-shadow: inset 0 0 0 1px #f44336; }
+        .stack-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; }
+        .stack-title { font-size: 0.74em; color: #cfcfcf; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stack-actions { display: flex; gap: 4px; }
         .stack-actions button { border: 1px solid #555; background: #292929; color: #eee; border-radius: 5px; font-size: 0.68em; padding: 2px 6px; cursor: pointer; }
-        .stack-item.selected { border-color: #ff3131; box-shadow: inset 0 0 0 1px #ff3131; }
-        .stack-select { transform: scale(0.9); accent-color: #ff3131; }
-        .timeline-tools { width: 100%; display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
-        .timeline-tools button { border: 1px solid #555; background: #272727; color: #ececec; border-radius: 5px; font-size: 0.68em; padding: 3px 7px; cursor: pointer; }
+        .frame-duration-row { margin-top: 6px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px; }
+        .frame-duration-slider { width: 100%; accent-color: #ff3131; }
+        .frame-duration-value { font-size: 0.7em; color: #d5d5d5; min-width: 48px; text-align: right; }
         .frame-thumbnail { width: 72%; margin: 0 auto; aspect-ratio: 1 / 1; background: #000; border: 2px solid #333; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 2px; }
         .frame-thumbnail.active { border-color: #f44336; }
-        .stack-children { margin-top: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-        .stack-child { aspect-ratio: 1 / 1; background: #000; border: 1px solid #3a3a3a; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 1px; }
-        .stack-child.active { border-color: #f44336; box-shadow: inset 0 0 0 1px #f44336; }
-        .stack-note { margin-top: 4px; font-size: 0.65em; color: #8f8f8f; text-align: center; }
+        .stack-children, .stack-child, .stack-note, .stack-select, .timeline-tools { display: none !important; }
         .thumb-cell { background: #000; }
         .thumb-cell.disabled { background: #121212; opacity: 0.2; }
         .audio-section { width: 100%; max-width: 600px; margin-top: 30px; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #ff3131; text-align: center; }
         .audio-head { display: flex; align-items: center; justify-content: center; gap: 8px; }
         .footer-note { margin-top: 20px; font-size: 0.75em; color: #888; }
+        .export-warning { display: none; margin-top: 8px; font-size: 0.78em; color: #ff7b7b; font-weight: 600; }
         .bake-btn { background: #ff3131; color: #fff; padding: 15px 25px; font-weight: bold; border: none; cursor: pointer; border-radius: 8px; width: 100%; font-size: 1.1em; transition: 0.2s; margin-top: 15px; }
         .action-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 25px; width: 100%; max-width: 600px; }
         .import-btn { background: #2e7d32; color: #fff; padding: 15px; font-weight: bold; border: none; cursor: pointer; border-radius: 6px; font-size: 0.9em; flex: 1; }
@@ -81,7 +79,7 @@
         .modal-btn.primary { background: #ff3131; border-color: #c52020; }
         .toast { position: fixed; right: 14px; bottom: 14px; background: #1f1f1f; border: 1px solid #444; color: #f1f1f1; padding: 9px 12px; border-radius: 8px; font-size: 0.8em; opacity: 0; transform: translateY(10px); transition: 0.2s; z-index: 1200; pointer-events: none; }
         .toast.show { opacity: 1; transform: translateY(0); }
-        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; gap: 12px; } .frame-manager { width: 100%; padding: 10px; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; align-items: stretch; } .stack-item { width: 132px; min-width: 132px; max-width: 132px; } .stack-actions { justify-content: flex-start; } .frame-thumbnail { width: 86%; height: auto; } .controls { margin-bottom: 10px; } .controls button { max-width: 84px; padding: 7px 8px; font-size: 0.8em; } .brightness-control, #grid { max-width: 340px; } .brightness-control { margin-bottom: 10px; } .action-buttons { margin-top: 14px; } .audio-section { margin-top: 16px; padding: 14px; } }
+        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; gap: 12px; } .frame-manager { width: 100%; padding: 10px; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; align-items: stretch; } .stack-item { width: 148px; min-width: 148px; max-width: 148px; } .frame-thumbnail { width: 86%; height: auto; } .controls { margin-bottom: 10px; } .controls button { max-width: 84px; padding: 7px 8px; font-size: 0.8em; } .brightness-control, #grid { max-width: 340px; } .brightness-control { margin-bottom: 10px; } .action-buttons { margin-top: 14px; } .audio-section { margin-top: 16px; padding: 14px; } }
     </style>
 </head>
 <body>
@@ -89,6 +87,7 @@
         <a class="active" href="index.html">Glyph Composer</a>
         <a href="gallery.html">Gallery</a>
         <a href="tutorial.html">Tutorial</a>
+        <a href="audio-converter.html">Audio Converter</a>
     </div>
     <h1>Glyph Composer</h1>
     <div class="subtitle">Nothing Phone 4a Pro (60 FPS)</div>
@@ -127,7 +126,7 @@
             <div id="grid"></div>
         </div>
         <div class="frame-manager">
-            <h3>Timeline (Stacks)</h3>
+            <h3>Timeline (Frames)</h3>
             <div class="timeline-tools">
                 <button onclick="selectAllStacks()">Select All</button>
                 <button onclick="clearStackSelection()">Clear</button>
@@ -152,6 +151,7 @@
         <p style="font-size: 0.8em; color: #888;">Select your .ogg file to bake the animation into the file metadata.</p>
         <input type="text" id="titleInput" placeholder="Ringtone title / Filename." style="width:100%; max-width: 420px; margin-bottom: 10px; padding: 10px; border-radius: 6px; border: 1px solid #555; background: #1e1e1e; color: #fff;">
         <input type="file" id="audioInput" accept=".ogg,.opus" style="margin-bottom: 10px; color: white;">
+        <div id="exportWarning" class="export-warning"></div>
         <button class="bake-btn" onclick="bakeOgg()">Bake &amp; Download OGG</button>
     </div>
     <div class="footer-note">&copy; its.sveennn</div>
@@ -161,7 +161,7 @@
     <div id="durationModalBackdrop" class="modal-backdrop" onclick="onDurationBackdropClick(event)">
         <div class="modal">
             <div class="modal-title">Set Frame Duration</div>
-            <div class="modal-help">1 frame = 16.7ms at 60 FPS. This changes only the selected stack.</div>
+            <div class="modal-help">1 frame = 16.7ms at 60 FPS. This changes only the selected frame.</div>
             <div class="modal-row">
                 <input id="durationModalInput" type="number" min="1" step="1" class="modal-input" oninput="updateDurationModalPreview()">
             </div>
@@ -186,6 +186,10 @@
         const TOTAL_PIXELS = 169;
         const FPS = 60;
         const FRAME_MS = 1000 / FPS;
+        const MIN_FRAME_DURATION_MS = 100;
+        const MAX_FRAME_DURATION_MS = 3000;
+        const DEFAULT_FRAME_DURATION_MS = 100;
+        const MAX_EXPORT_FRAMES = 1200; // Safety cap to avoid oversized metadata breaking playback
 
         const LED_MASK = [
             0,0,0,0,1,1,1,1,1,0,0,0,0,
@@ -203,8 +207,9 @@
             0,0,0,0,1,1,1,1,1,0,0,0,0
         ];
 
-        let frames = [new Array(TOTAL_PIXELS).fill(0)];
-        let frameGroupIds = [0];
+        const INITIAL_REPEATS = Math.max(1, Math.round(DEFAULT_FRAME_DURATION_MS / FRAME_MS));
+        let frames = Array.from({ length: INITIAL_REPEATS }, () => new Array(TOTAL_PIXELS).fill(0));
+        let frameGroupIds = Array.from({ length: INITIAL_REPEATS }, () => 0);
         let nextFrameGroupId = 1;
         let currentFrame = 0;
         let selectedBrightness = 4095;
@@ -227,6 +232,15 @@
         const MAX_HISTORY = 80;
         let saveDebounce = null;
         const AUTOSAVE_KEY = 'glyphComposerAutosaveV2';
+        let lastAudioDurationSec = null;
+
+        function clampFrameDurationMs(ms) {
+            return Math.max(MIN_FRAME_DURATION_MS, Math.min(MAX_FRAME_DURATION_MS, Math.round(Number(ms) || DEFAULT_FRAME_DURATION_MS)));
+        }
+
+        function durationMsToRepeats(ms) {
+            return Math.max(1, Math.round(clampFrameDurationMs(ms) / FRAME_MS));
+        }
 
         function updateBrightness(p) {
             const pct = Math.max(0, Math.min(100, Number(p) || 0));
@@ -491,8 +505,14 @@
         function renderGridFrame(frameIndex) {
             ensureGrid();
             const frame = frames[frameIndex] || frames[0] || new Array(TOTAL_PIXELS).fill(0);
-            const prev = frameIndex > 0 ? frames[frameIndex - 1] : null;
-            const next = frameIndex < frames.length - 1 ? frames[frameIndex + 1] : null;
+            let prev = null;
+            let next = null;
+            if (onionSkinEnabled) {
+                const stacks = buildFrameStacks();
+                const idx = stacks.findIndex(s => frameIndex >= s.start && frameIndex <= s.end);
+                if (idx > 0) prev = frames[stacks[idx - 1].start] || null;
+                if (idx >= 0 && idx < stacks.length - 1) next = frames[stacks[idx + 1].start] || null;
+            }
             for (let i = 0; i < TOTAL_PIXELS; i++) {
                 const cell = cellElements[i];
                 if (!cell || LED_MASK[i] === 0) continue;
@@ -543,13 +563,14 @@
             return { start, end, repeats, ms: repeats * FRAME_MS, groupId: gid };
         }
 
-        function applyRunDurationByStart(stackStart, wantedMs) {
+        function applyRunDurationByStart(stackStart, wantedMs, recordUndo = true) {
             if (!Array.isArray(frames) || frames.length === 0) return;
-            pushUndo('duration');
+            const clampedMs = clampFrameDurationMs(wantedMs);
+            if (recordUndo) pushUndo('duration');
             stopPreview(true);
             ensureGroupIntegrity();
             const run = getFrameRunBounds(stackStart);
-            const wantedRepeats = Math.max(1, Math.round(Math.max(1, wantedMs) / FRAME_MS));
+            const wantedRepeats = Math.max(1, Math.round(clampedMs / FRAME_MS));
             const diff = wantedRepeats - run.repeats;
 
             if (diff > 0) {
@@ -626,7 +647,41 @@
         }
 
         function renderFrameInfo() {
-            document.getElementById('frameInfo').innerText = `Frame: ${currentFrame + 1} / ${frames.length}`;
+            const stacks = buildFrameStacks();
+            let logicalIndex = 0;
+            for (let i = 0; i < stacks.length; i++) {
+                if (currentFrame >= stacks[i].start && currentFrame <= stacks[i].end) {
+                    logicalIndex = i;
+                    break;
+                }
+            }
+            const currentDuration = stacks[logicalIndex] ? Math.round(stacks[logicalIndex].repeats * FRAME_MS) : DEFAULT_FRAME_DURATION_MS;
+            const totalSec = (frames.length * FRAME_MS / 1000).toFixed(3);
+            document.getElementById('frameInfo').innerText = `Frame: ${logicalIndex + 1} / ${stacks.length} | Current: ${currentDuration}ms | Total: ${totalSec}s`;
+            updateExportWarning();
+        }
+
+        function getAnimationDurationSeconds() {
+            return (frames.length * FRAME_MS) / 1000;
+        }
+
+        function updateExportWarning(forceAudioSec = null) {
+            const warningEl = document.getElementById('exportWarning');
+            if (!warningEl) return;
+            const audioSec = forceAudioSec !== null ? forceAudioSec : lastAudioDurationSec;
+            if (!Number.isFinite(audioSec) || audioSec <= 0) {
+                warningEl.style.display = 'none';
+                warningEl.innerText = '';
+                return;
+            }
+            const animSec = getAnimationDurationSeconds();
+            if (animSec > audioSec + 0.001) {
+                warningEl.style.display = 'block';
+                warningEl.innerText = `Audio is shorter than animation (${audioSec.toFixed(3)}s < ${animSec.toFixed(3)}s). Export will trim animation to audio length.`;
+            } else {
+                warningEl.style.display = 'none';
+                warningEl.innerText = '';
+            }
         }
 
         function renderUI() {
@@ -796,72 +851,18 @@
             stackPreviewByFrame = new Array(frames.length);
             childPreviewByFrame = new Array(frames.length);
             const stacks = buildFrameStacks();
-            const validStarts = new Set(stacks.map(s => s.start));
-            selectedStackStarts = new Set([...selectedStackStarts].filter(s => validStarts.has(s)));
-
             stacks.forEach((stack, stackIdx) => {
                 const item = document.createElement('div');
                 item.className = 'stack-item';
-                if (selectedStackStarts.has(stack.start)) item.classList.add('selected');
 
                 const head = document.createElement('div');
                 head.className = 'stack-head';
 
                 const title = document.createElement('div');
                 title.className = 'stack-title';
-                title.textContent = `Frames ${stack.start + 1}-${stack.end + 1} (x${stack.repeats})`;
-
-                const actions = document.createElement('div');
-                actions.className = 'stack-actions';
-
-                const sel = document.createElement('input');
-                sel.type = 'checkbox';
-                sel.className = 'stack-select';
-                sel.checked = selectedStackStarts.has(stack.start);
-                sel.onchange = () => {
-                    if (sel.checked) selectedStackStarts.add(stack.start);
-                    else selectedStackStarts.delete(stack.start);
-                    item.classList.toggle('selected', sel.checked);
-                };
-
-                const toggleBtn = document.createElement('button');
-                const expanded = expandedStacks.has(stack.start);
-                toggleBtn.textContent = expanded ? 'Hide' : 'Expand';
-                toggleBtn.onclick = () => {
-                    if (expandedStacks.has(stack.start)) expandedStacks.delete(stack.start);
-                    else expandedStacks.add(stack.start);
-                    renderThumbnails();
-                };
-
-                const delBtn = document.createElement('button');
-                delBtn.textContent = 'Delete';
-                delBtn.onclick = () => deleteStack(stack.start, stack.end);
-
-                const durBtn = document.createElement('button');
-                durBtn.textContent = 'Duration';
-                durBtn.onclick = () => promptDurationForStack(stack.start);
-
-                const splitBtn = document.createElement('button');
-                splitBtn.textContent = 'Split';
-                splitBtn.onclick = () => splitStack(stack.start);
-
-                const mergeBtn = document.createElement('button');
-                mergeBtn.textContent = 'Merge';
-                mergeBtn.onclick = () => mergeStackWithNext(stack.start);
-
-                const dupBtn = document.createElement('button');
-                dupBtn.textContent = 'Dup';
-                dupBtn.onclick = () => duplicateStack(stack.start);
-
-                actions.appendChild(sel);
-                actions.appendChild(toggleBtn);
-                actions.appendChild(durBtn);
-                actions.appendChild(splitBtn);
-                actions.appendChild(mergeBtn);
-                actions.appendChild(dupBtn);
-                actions.appendChild(delBtn);
+                title.textContent = `Frame ${stackIdx + 1}`;
                 head.appendChild(title);
-                head.appendChild(actions);
+                item.appendChild(head);
 
                 const stackPreview = document.createElement('div');
                 stackPreview.className = 'frame-thumbnail';
@@ -874,40 +875,35 @@
                 };
                 renderFrameMiniGrid(stackPreview, frames[stack.start]);
                 for (let i = stack.start; i <= stack.end; i++) stackPreviewByFrame[i] = stackPreview;
-
-                item.appendChild(head);
                 item.appendChild(stackPreview);
 
-                if (expandedStacks.has(stack.start)) {
-                    const childrenWrap = document.createElement('div');
-                    childrenWrap.className = 'stack-children';
-                    const maxChildren = 120;
-                    const visibleCount = Math.min(stack.repeats, maxChildren);
-                    for (let offset = 0; offset < visibleCount; offset++) {
-                        const frameIdx = stack.start + offset;
-                        const child = document.createElement('div');
-                        child.className = 'stack-child';
-                        child.title = `Frame ${frameIdx + 1}`;
-                        child.onclick = () => {
-                            stopPreview(true);
-                            currentFrame = frameIdx;
-                            renderGridFrame(currentFrame);
-                            renderFrameInfo();
-                            updateActiveThumbnail();
-                        };
-                        renderFrameMiniGrid(child, frames[frameIdx]);
-                        childPreviewByFrame[frameIdx] = child;
-                        childrenWrap.appendChild(child);
-                    }
-                    item.appendChild(childrenWrap);
-                    if (stack.repeats > maxChildren) {
-                        const note = document.createElement('div');
-                        note.className = 'stack-note';
-                        note.textContent = `Showing ${maxChildren}/${stack.repeats} frames`;
-                        item.appendChild(note);
-                    }
-                }
+                const durationMs = Math.round(stack.repeats * FRAME_MS);
+                const clampedDuration = clampFrameDurationMs(durationMs);
+                const row = document.createElement('div');
+                row.className = 'frame-duration-row';
 
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.min = String(MIN_FRAME_DURATION_MS);
+                slider.max = String(MAX_FRAME_DURATION_MS);
+                slider.step = '50';
+                slider.value = String(clampedDuration);
+                slider.className = 'frame-duration-slider';
+
+                const valueLabel = document.createElement('div');
+                valueLabel.className = 'frame-duration-value';
+                valueLabel.innerText = `${clampedDuration}ms`;
+
+                slider.oninput = () => {
+                    valueLabel.innerText = `${slider.value}ms`;
+                };
+                slider.onchange = () => {
+                    applyRunDurationByStart(stack.start, Number(slider.value), true);
+                };
+
+                row.appendChild(slider);
+                row.appendChild(valueLabel);
+                item.appendChild(row);
                 list.appendChild(item);
             });
             updateActiveThumbnail();
@@ -917,9 +913,15 @@
             pushUndo('add frame');
             stopPreview(true);
             ensureGroupIntegrity();
-            frames.push(new Array(TOTAL_PIXELS).fill(0));
-            frameGroupIds.push(nextFrameGroupId++);
-            currentFrame = frames.length - 1;
+            const run = getFrameRunBounds(currentFrame);
+            const insertAt = run.end + 1;
+            const gid = nextFrameGroupId++;
+            const reps = durationMsToRepeats(DEFAULT_FRAME_DURATION_MS);
+            const newFrames = Array.from({ length: reps }, () => new Array(TOTAL_PIXELS).fill(0));
+            const newGroups = Array.from({ length: reps }, () => gid);
+            frames.splice(insertAt, 0, ...newFrames);
+            frameGroupIds.splice(insertAt, 0, ...newGroups);
+            currentFrame = insertAt;
             expandedStacks.clear();
             queueAutosave();
             renderUI();
@@ -929,40 +931,52 @@
             pushUndo('copy frame');
             stopPreview(true);
             ensureGroupIntegrity();
-            frames.splice(currentFrame + 1, 0, [...frames[currentFrame]]);
-            frameGroupIds.splice(currentFrame + 1, 0, nextFrameGroupId++);
-            currentFrame++;
+            const run = getFrameRunBounds(currentFrame);
+            const insertAt = run.end + 1;
+            const reps = run.repeats;
+            const gid = nextFrameGroupId++;
+            const base = frames[run.start].slice();
+            const clonedFrames = Array.from({ length: reps }, () => base.slice());
+            const clonedGroups = Array.from({ length: reps }, () => gid);
+            frames.splice(insertAt, 0, ...clonedFrames);
+            frameGroupIds.splice(insertAt, 0, ...clonedGroups);
+            currentFrame = insertAt;
             expandedStacks.clear();
             queueAutosave();
             renderUI();
         }
 
         function deleteFrame() {
-            if (frames.length > 1) {
-                pushUndo('delete frame');
-                stopPreview(true);
-                ensureGroupIntegrity();
-                frames.splice(currentFrame, 1);
-                frameGroupIds.splice(currentFrame, 1);
-                currentFrame = Math.min(currentFrame, frames.length - 1);
-                expandedStacks.clear();
-                queueAutosave();
-                renderUI();
-            }
+            if (frames.length <= 1) return;
+            pushUndo('delete frame');
+            stopPreview(true);
+            ensureGroupIntegrity();
+            const run = getFrameRunBounds(currentFrame);
+            if (frames.length - run.repeats <= 0) return;
+            frames.splice(run.start, run.repeats);
+            frameGroupIds.splice(run.start, run.repeats);
+            currentFrame = Math.max(0, Math.min(run.start, frames.length - 1));
+            expandedStacks.clear();
+            queueAutosave();
+            renderUI();
         }
 
         function prevFrame() {
-            if (currentFrame > 0) {
+            const stacks = buildFrameStacks();
+            const idx = stacks.findIndex(s => currentFrame >= s.start && currentFrame <= s.end);
+            if (idx > 0) {
                 stopPreview(true);
-                currentFrame--;
+                currentFrame = stacks[idx - 1].start;
                 renderUI();
             }
         }
 
         function nextFrame() {
-            if (currentFrame < frames.length - 1) {
+            const stacks = buildFrameStacks();
+            const idx = stacks.findIndex(s => currentFrame >= s.start && currentFrame <= s.end);
+            if (idx >= 0 && idx < stacks.length - 1) {
                 stopPreview(true);
-                currentFrame++;
+                currentFrame = stacks[idx + 1].start;
                 renderUI();
             }
         }
@@ -1182,12 +1196,30 @@
             const targetCount = Math.max(sourceFrames.length, requiredCount);
 
             if (targetCount === sourceFrames.length) return sourceFrames;
+            if (targetCount > MAX_EXPORT_FRAMES) return sourceFrames;
 
             const out = new Array(targetCount);
             for (let i = 0; i < targetCount; i++) {
                 out[i] = sourceFrames[i % sourceFrames.length].slice();
             }
             return out;
+        }
+
+        function fitFramesToAudioDuration(sourceFrames, durationSeconds) {
+            if (!Array.isArray(sourceFrames) || sourceFrames.length === 0) {
+                return [new Array(TOTAL_PIXELS).fill(0)];
+            }
+            const audioSec = Number(durationSeconds);
+            if (!Number.isFinite(audioSec) || audioSec <= 0) return sourceFrames;
+
+            const targetCount = Math.max(1, Math.ceil(audioSec * FPS));
+            if (sourceFrames.length > targetCount) {
+                return sourceFrames.slice(0, targetCount).map(f => f.slice());
+            }
+            if (sourceFrames.length < targetCount) {
+                return expandFramesToDuration(sourceFrames, audioSec);
+            }
+            return sourceFrames;
         }
 
         function parseVorbisComment(packet) {
@@ -1478,7 +1510,15 @@
                     if (!codec) throw new Error('Unsupported OGG codec. Use OGG Vorbis or OGG Opus.');
 
                     const audioDurationSec = getAudioDurationSecondsFromOgg(pages, packets, codec);
-                    const exportFrames = expandFramesToDuration(frames, audioDurationSec);
+                    lastAudioDurationSec = audioDurationSec;
+                    updateExportWarning();
+                    const exportFrames = fitFramesToAudioDuration(frames, audioDurationSec);
+                    const needed = Math.max(1, Math.ceil(audioDurationSec * FPS));
+                    if (frames.length > needed) {
+                        showToast('Animation trimmed to audio length');
+                    } else if (exportFrames.length === frames.length && needed > frames.length) {
+                        showToast('Export safety: loop capped to protect audio playback');
+                    }
                     const b64 = getBase64(exportFrames);
                     const result = injectGlyphMetadataIntoOgg(originalBytes, b64, finalTitle);
                     const bakedBytes = result.bytes;
@@ -1494,6 +1534,36 @@
             };
 
             reader.onerror = () => alert('Could not read the selected audio file.');
+            reader.readAsArrayBuffer(file);
+        }
+
+        function handleAudioSelectionChange(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) {
+                lastAudioDurationSec = null;
+                updateExportWarning();
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const bytesView = new Uint8Array(e.target.result);
+                    const pages = parseOggPages(bytesView);
+                    const packets = extractPackets(bytesView, pages).packets;
+                    const isVorbis = startsWithBytes(packets[0] || new Uint8Array(), [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+                    const isOpus = startsWithBytes(packets[0] || new Uint8Array(), [0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64]);
+                    const codec = isVorbis ? 'vorbis' : (isOpus ? 'opus' : '');
+                    if (!codec) throw new Error('Unsupported OGG codec');
+                    lastAudioDurationSec = getAudioDurationSecondsFromOgg(pages, packets, codec);
+                } catch {
+                    lastAudioDurationSec = null;
+                }
+                updateExportWarning();
+            };
+            reader.onerror = () => {
+                lastAudioDurationSec = null;
+                updateExportWarning();
+            };
             reader.readAsArrayBuffer(file);
         }
 
@@ -1559,9 +1629,10 @@
             const packedFrames = [];
             const stacks = buildFrameStacks();
             stacks.forEach((stack) => {
+                const ms = clampFrameDurationMs(stack.repeats * FRAME_MS);
                 packedFrames.push({
                     p: frameToActivePixels8Bit(frames[stack.start]),
-                    d: Math.round(stack.repeats * FRAME_MS)
+                    d: ms
                 });
             });
 
@@ -1685,12 +1756,21 @@
                     pIdx++;
                 }
 
-                const d = Number(f.d);
-                const reps = Math.max(1, Math.round((Number.isFinite(d) ? d : FRAME_MS) / FRAME_MS));
-                const gid = nextFrameGroupId++;
-                for (let r = 0; r < reps; r++) {
-                    newFrames.push(mapped.slice());
-                    newGroups.push(gid);
+                let remaining = Number(f.d);
+                if (!Number.isFinite(remaining) || remaining <= 0) remaining = DEFAULT_FRAME_DURATION_MS;
+                remaining = Math.max(MIN_FRAME_DURATION_MS, Math.round(remaining));
+
+                while (remaining > 0) {
+                    let chunk = Math.min(MAX_FRAME_DURATION_MS, remaining);
+                    if (chunk < MIN_FRAME_DURATION_MS) chunk = MIN_FRAME_DURATION_MS;
+                    const reps = Math.max(1, Math.round(chunk / FRAME_MS));
+                    const gid = nextFrameGroupId++;
+                    for (let r = 0; r < reps; r++) {
+                        newFrames.push(mapped.slice());
+                        newGroups.push(gid);
+                    }
+                    remaining -= chunk;
+                    if (remaining < MIN_FRAME_DURATION_MS) remaining = 0;
                 }
             });
 
@@ -1730,6 +1810,10 @@
             const titleInput = document.getElementById('titleInput');
             if (titleInput) {
                 titleInput.addEventListener('input', queueAutosave);
+            }
+            const audioInput = document.getElementById('audioInput');
+            if (audioInput) {
+                audioInput.addEventListener('change', handleAudioSelectionChange);
             }
         };
 
