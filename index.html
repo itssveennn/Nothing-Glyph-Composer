@@ -1500,11 +1500,19 @@
                 const parsed = parseVorbisComment(packets[1]);
                 let comments = upsertComment(parsed.comments, 'AUTHOR', b64);
                 comments = upsertComment(comments, 'TITLE', title);
+                comments = upsertComment(comments, 'CUSTOM1', 'eNpTAAAAIQAh');
+                comments = upsertComment(comments, 'CUSTOM2', '169cols');
+                comments = upsertComment(comments, 'COMPOSER', 'v1-FroggerPro Glyph Composer');
+                comments = upsertComment(comments, 'TLEN', '8880');
                 packets[1] = buildVorbisCommentPacket(parsed.vendor, comments);
             } else {
                 const parsed = parseOpusTags(packets[1]);
                 let comments = upsertComment(parsed.comments, 'AUTHOR', b64);
                 comments = upsertComment(comments, 'TITLE', title);
+                comments = upsertComment(comments, 'CUSTOM1', 'eNpTAAAAIQAh');
+                comments = upsertComment(comments, 'CUSTOM2', '169cols');
+                comments = upsertComment(comments, 'COMPOSER', 'v1-FroggerPro Glyph Composer');
+                comments = upsertComment(comments, 'TLEN', '8880');
                 packets[1] = buildOpusTagsPacket(parsed.vendor, comments);
             }
 
