@@ -1222,6 +1222,36 @@
             return sourceFrames;
         }
 
+        function hasAnyLitPixel(frame) {
+            if (!Array.isArray(frame)) return false;
+            for (let i = 0; i < TOTAL_PIXELS; i++) {
+                if (LED_MASK[i] === 1 && (Number(frame[i]) || 0) > 0) return true;
+            }
+            return false;
+        }
+
+        function hasAnyLitAcrossFrames(sourceFrames) {
+            if (!Array.isArray(sourceFrames)) return false;
+            for (const f of sourceFrames) {
+                if (hasAnyLitPixel(f)) return true;
+            }
+            return false;
+        }
+
+        function shiftToFirstLitAndFit(sourceFrames, durationSeconds) {
+            if (!Array.isArray(sourceFrames) || sourceFrames.length === 0) return sourceFrames;
+            const audioSec = Number(durationSeconds);
+            if (!Number.isFinite(audioSec) || audioSec <= 0) return sourceFrames;
+            const needed = Math.max(1, Math.min(MAX_EXPORT_FRAMES, Math.ceil(audioSec * FPS)));
+            const firstLit = sourceFrames.findIndex(hasAnyLitPixel);
+            if (firstLit < 0) return sourceFrames.slice(0, needed).map(f => f.slice());
+            const out = new Array(needed);
+            for (let i = 0; i < needed; i++) {
+                out[i] = sourceFrames[(firstLit + i) % sourceFrames.length].slice();
+            }
+            return out;
+        }
+
         function parseVorbisComment(packet) {
             const sig = [0x03, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73];
             if (!startsWithBytes(packet, sig)) throw new Error('Invalid Vorbis comment packet.');
@@ -1512,12 +1542,16 @@
                     const audioDurationSec = getAudioDurationSecondsFromOgg(pages, packets, codec);
                     lastAudioDurationSec = audioDurationSec;
                     updateExportWarning();
-                    const exportFrames = fitFramesToAudioDuration(frames, audioDurationSec);
+                    let exportFrames = fitFramesToAudioDuration(frames, audioDurationSec);
                     const needed = Math.max(1, Math.ceil(audioDurationSec * FPS));
                     if (frames.length > needed) {
                         showToast('Animation trimmed to audio length');
                     } else if (exportFrames.length === frames.length && needed > frames.length) {
                         showToast('Export safety: loop capped to protect audio playback');
+                    }
+                    if (!hasAnyLitAcrossFrames(exportFrames) && hasAnyLitAcrossFrames(frames)) {
+                        exportFrames = shiftToFirstLitAndFit(frames, audioDurationSec);
+                        showToast('Trim fallback: started at first lit frame');
                     }
                     const b64 = getBase64(exportFrames);
                     const result = injectGlyphMetadataIntoOgg(originalBytes, b64, finalTitle);

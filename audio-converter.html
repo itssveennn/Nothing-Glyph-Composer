@@ -192,10 +192,15 @@
                 setStatus("Converting to Ogg Vorbis...");
                 await ffmpeg.exec([
                     "-i", inName,
+                    "-vn",
+                    "-sn",
+                    "-dn",
+                    "-map_metadata", "-1",
                     "-c:a", "libvorbis",
                     "-ac", "1",
                     "-ar", "48000",
                     "-q:a", "5",
+                    "-f", "ogg",
                     outName
                 ]);
 
