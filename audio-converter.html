@@ -115,17 +115,15 @@
                 <div id="progressBar" class="progress-bar"></div>
             </div>
             <div id="status" class="status">Ready.</div>
-            <div class="small">
-                Tip: Use this page on GitHub Pages (https). Opening via <code>file://</code> can break WebWorker loading in some browsers.
-            </div>
+            
         </div>
     </div>
 
     <div class="footer">&copy; its.sveennn</div>
 
     <script type="module">
-        import { FFmpeg } from "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
-        import { fetchFile, toBlobURL } from "https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js";
+        import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
+        import { fetchFile, toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
 
         const input = document.getElementById("audioInput");
         const convertBtn = document.getElementById("convertBtn");
@@ -152,15 +150,26 @@
             if (ffmpegLoaded) return;
             setStatus("Loading converter core (first time can take a while)...");
             setProgress(0.02);
-
-            const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
-            const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript");
-            const wasmURL = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm");
-            const workerURL = await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, "text/javascript");
-            await ffmpeg.load({ coreURL, wasmURL, workerURL });
-            ffmpegLoaded = true;
-            setProgress(0.06);
-            setStatus("Converter ready.");
+            const baseCandidates = [
+                "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm",
+                "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
+            ];
+            let lastErr = null;
+            for (const baseURL of baseCandidates) {
+                try {
+                    const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript");
+                    const wasmURL = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm");
+                    const workerURL = await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, "text/javascript");
+                    await ffmpeg.load({ coreURL, wasmURL, workerURL });
+                    ffmpegLoaded = true;
+                    setProgress(0.06);
+                    setStatus("Converter ready.");
+                    return;
+                } catch (err) {
+                    lastErr = err;
+                }
+            }
+            throw lastErr || new Error("Could not load FFmpeg core files.");
         }
 
         ffmpeg.on("progress", ({ progress }) => {
@@ -222,7 +231,12 @@
                 try { await ffmpeg.deleteFile(outName); } catch {}
             } catch (err) {
                 setProgress(0);
-                setStatus(`Conversion failed: ${err && err.message ? err.message : String(err)}`);
+                const msg = err && err.message ? err.message : String(err);
+                if (/Failed to fetch|NetworkError|fetch/i.test(msg)) {
+                    setStatus(`Conversion failed: ${msg}\nPlease check internet/adblock/firewall and try again.`);
+                } else {
+                    setStatus(`Conversion failed: ${msg}`);
+                }
             } finally {
                 busy = false;
                 convertBtn.disabled = false;
