@@ -104,7 +104,7 @@
 
     <div class="wrap">
         <h1>Audio Converter</h1>
-        <div class="subtitle">Convert MP3/M4A/WAV to Opus audio and download as <code>.ogg</code>.</div>
+        <div class="subtitle">Convert MP3/M4A/WAV to Ogg Vorbis and download as <code>.ogg</code>.</div>
 
         <div class="card">
             <div class="row">
@@ -189,13 +189,13 @@
                 setStatus("Reading input...");
                 await ffmpeg.writeFile(inName, await fetchFile(file));
 
-                setStatus("Converting to Opus...");
+                setStatus("Converting to Ogg Vorbis...");
                 await ffmpeg.exec([
                     "-i", inName,
-                    "-c:a", "libopus",
-                    "-b:a", "128k",
-                    "-vbr", "on",
-                    "-application", "audio",
+                    "-c:a", "libvorbis",
+                    "-ac", "1",
+                    "-ar", "48000",
+                    "-q:a", "5",
                     outName
                 ]);
 
