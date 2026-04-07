@@ -1515,6 +1515,31 @@
             };
         }
 
+        function hasGlyphAuthorMetadata(arrayBuffer) {
+            try {
+                const bytes = new Uint8Array(arrayBuffer);
+                const pages = parseOggPages(bytes);
+                const { packets } = extractPackets(bytes, pages);
+                if (!packets.length) return false;
+
+                const isVorbis = startsWithBytes(packets[0], [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+                const isOpus = startsWithBytes(packets[0], [0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64]);
+                if (!isVorbis && !isOpus) return false;
+                if (packets.length < 2) return false;
+
+                const parsed = isVorbis ? parseVorbisComment(packets[1]) : parseOpusTags(packets[1]);
+                return parsed.comments.some((c) => {
+                    const eq = c.indexOf('=');
+                    if (eq <= 0) return false;
+                    const key = c.slice(0, eq).toUpperCase();
+                    const val = c.slice(eq + 1);
+                    return key === 'AUTHOR' && val.length > 0;
+                });
+            } catch {
+                return false;
+            }
+        }
+
         async function bakeOgg() {
             const fileInput = document.getElementById('audioInput');
             const titleInput = document.getElementById('titleInput');
@@ -1556,12 +1581,22 @@
                     const b64 = getBase64(exportFrames);
                     const result = injectGlyphMetadataIntoOgg(originalBytes, b64, finalTitle);
                     const bakedBytes = result.bytes;
+                    const verifyBuffer = bakedBytes.buffer.slice(
+                        bakedBytes.byteOffset,
+                        bakedBytes.byteOffset + bakedBytes.byteLength
+                    );
+                    const hasMeta = hasGlyphAuthorMetadata(verifyBuffer);
+                    if (!hasMeta) {
+                        alert('Bake failed: Glyph metadata could not be verified in output OGG. Please try another OGG source file.');
+                        return;
+                    }
 
                     const blob = new Blob([bakedBytes], { type: 'audio/ogg' });
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
-                    a.download = finalTitle + '.ogg';
+                    a.download = `${finalTitle}_ringtone_baked.ogg`;
                     a.click();
+                    showToast('Ringtone baked and verified');
                 } catch (err) {
                     alert('Baking failed: ' + (err && err.message ? err.message : String(err)));
                 }
