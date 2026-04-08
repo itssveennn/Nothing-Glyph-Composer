@@ -41,8 +41,32 @@
         }
         .cell { background: #000; border: 1px solid #333; border-radius: 2px; cursor: pointer; transition: background 0.1s; }
         .cell.disabled { background: #121212; border-color: #1a1a1a; cursor: not-allowed; opacity: 0.3; }
-        .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 460px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        .frame-manager { background: #1e1e1e; padding: 15px; border-radius: 8px; width: 620px; max-width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
         .frame-list { width: 100%; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; align-items: stretch; }
+        .mode-switch { width: 100%; display: flex; gap: 6px; margin-bottom: 10px; }
+        .mode-btn { flex: 1; border: 1px solid #4a4a4a; background: #2a2a2a; color: #ddd; border-radius: 6px; padding: 6px 8px; font-size: 0.78em; cursor: pointer; }
+        .mode-btn.active { border-color: #ff3131; color: #fff; }
+        .audio-mode-panel { width: 100%; display: none; flex-direction: column; gap: 8px; }
+        .audio-mode-panel.show { display: flex; }
+        .audio-mode-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+        .audio-mode-controls button { border: 1px solid #555; background: #282828; color: #f0f0f0; border-radius: 6px; padding: 6px 10px; font-size: 0.75em; cursor: pointer; }
+        .audio-mode-controls button.primary { background: #ff3131; border-color: #c52020; color: #fff; }
+        .audio-seek { width: 100%; accent-color: #ff3131; }
+        .audio-time { font-size: 0.74em; color: #c6c6c6; display: flex; justify-content: space-between; }
+        .audio-track-wrap { position: relative; width: 100%; border: 1px solid #333; border-radius: 8px; background: #121212; padding: 6px; min-height: 182px; }
+        .audio-editor-scroll { width: 100%; overflow-x: auto; overflow-y: hidden; border-radius: 6px; }
+        .audio-editor-canvas { position: relative; height: 160px; min-width: 100%; border-radius: 6px; background: #101010; }
+        .audio-wave-canvas { position: absolute; left: 0; right: 0; top: 0; height: 78px; width: 100%; display: block; border-bottom: 1px solid #232323; }
+        .audio-frame-overlay { position: absolute; left: 0; right: 0; top: 82px; bottom: 0; pointer-events: auto; }
+        .audio-frame-block { position: absolute; top: 8px; bottom: 8px; border: 1px solid #3a3a3a; background: rgba(30,30,30,0.78); border-radius: 8px; overflow: hidden; cursor: pointer; min-width: 12px; }
+        .audio-frame-block.active { border-color: #ff3131; box-shadow: inset 0 0 0 1px #ff3131; background: rgba(120,20,20,0.45); }
+        .audio-frame-block .label { position: absolute; left: 6px; top: 4px; font-size: 0.68em; color: #e5e5e5; z-index: 2; }
+        .audio-frame-thumb { position: absolute; left: 6px; top: 22px; width: 36px; height: 36px; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; }
+        .audio-frame-thumb .t { background: #000; }
+        .audio-frame-thumb .t.d { background: #111; opacity: 0.28; }
+        .audio-resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 9px; background: rgba(255,255,255,0.08); cursor: ew-resize; border-left: 1px solid rgba(255,255,255,0.12); z-index: 3; }
+        .audio-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #ffffff; opacity: 0.95; pointer-events: none; transform: translateX(-1px); z-index: 6; }
+        .audio-mode-note { font-size: 0.72em; color: #9d9d9d; }
         .stack-item { background: #151515; border: 1px solid #2f2f2f; border-radius: 8px; padding: 6px; width: 100%; }
         .stack-item.selected { border-color: #f44336; box-shadow: inset 0 0 0 1px #f44336; }
         .stack-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; }
@@ -79,7 +103,7 @@
         .modal-btn.primary { background: #ff3131; border-color: #c52020; }
         .toast { position: fixed; right: 14px; bottom: 14px; background: #1f1f1f; border: 1px solid #444; color: #f1f1f1; padding: 9px 12px; border-radius: 8px; font-size: 0.8em; opacity: 0; transform: translateY(10px); transition: 0.2s; z-index: 1200; pointer-events: none; }
         .toast.show { opacity: 1; transform: translateY(0); }
-        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; gap: 12px; } .frame-manager { width: 100%; padding: 10px; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; align-items: stretch; } .stack-item { width: 148px; min-width: 148px; max-width: 148px; } .frame-thumbnail { width: 86%; height: auto; } .controls { margin-bottom: 10px; } .controls button { max-width: 84px; padding: 7px 8px; font-size: 0.8em; } .brightness-control, #grid { max-width: 340px; } .brightness-control { margin-bottom: 10px; } .action-buttons { margin-top: 14px; } .audio-section { margin-top: 16px; padding: 14px; } }
+        @media (max-width: 768px) { .main-container { flex-direction: column; align-items: center; gap: 12px; } .frame-manager { width: 100%; padding: 10px; } .frame-list { flex-direction: row; overflow-x: auto; max-height: none; align-items: stretch; } .stack-item { width: 148px; min-width: 148px; max-width: 148px; } .frame-thumbnail { width: 86%; height: auto; } .controls { margin-bottom: 10px; } .controls button { max-width: 84px; padding: 7px 8px; font-size: 0.8em; } .brightness-control, #grid { max-width: 340px; } .brightness-control { margin-bottom: 10px; } .action-buttons { margin-top: 14px; } .audio-section { margin-top: 16px; padding: 14px; } .audio-track-wrap { min-height: 136px; } .audio-editor-canvas { height: 116px; } .audio-wave-canvas { height: 52px; } .audio-frame-overlay { top: 56px; } .audio-frame-block { min-width: 36px; } .audio-frame-block .label { font-size: 0.6em; } .audio-frame-thumb { width: 24px; height: 24px; top: 18px; } }
     </style>
 </head>
 <body>
@@ -127,6 +151,10 @@
         </div>
         <div class="frame-manager">
             <h3>Timeline (Frames)</h3>
+            <div class="mode-switch">
+                <button id="modeTimelineBtn" class="mode-btn active" onclick="setEditorMode('timeline')">Timeline</button>
+                <button id="modeAudioBtn" class="mode-btn" onclick="setEditorMode('audio')">Audio Sync</button>
+            </div>
             <div class="timeline-tools">
                 <button onclick="selectAllStacks()">Select All</button>
                 <button onclick="clearStackSelection()">Clear</button>
@@ -134,6 +162,27 @@
                 <button onclick="duplicateSelectedStacks()">Duplicate Selected</button>
             </div>
             <div id="frameList" class="frame-list"></div>
+            <div id="audioModePanel" class="audio-mode-panel">
+                <div class="audio-mode-controls">
+                    <button id="audioPreviewPlayBtn" class="primary" onclick="toggleAudioPreview()">Play Audio</button>
+                    <button onclick="stopAudioPreview()">Stop</button>
+                </div>
+                <input id="audioSeek" class="audio-seek" type="range" min="0" max="1" step="0.001" value="0" oninput="seekAudioPreview(this.value)">
+                <div id="audioTimeInfo" class="audio-time">
+                    <span>0.000s</span>
+                    <span>0.000s</span>
+                </div>
+                <div class="audio-track-wrap">
+                    <div id="audioEditorScroll" class="audio-editor-scroll">
+                        <div id="audioEditorCanvas" class="audio-editor-canvas">
+                            <canvas id="audioWaveCanvas" class="audio-wave-canvas"></canvas>
+                            <div id="audioFrameOverlay" class="audio-frame-overlay"></div>
+                            <div id="audioPlayhead" class="audio-playhead" style="left: 0px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="audioModeNote" class="audio-mode-note">Load an audio file to use Audio Sync mode.</div>
+            </div>
         </div>
     </div>
 
@@ -242,6 +291,17 @@
         let lastAudioDurationSec = null;
         let pendingAudioArrayBuffer = null;
         let pendingAudioName = '';
+        let editorMode = 'timeline';
+        let audioSegments = [];
+        let audioAnimRaf = null;
+        let audioPreviewUrl = null;
+        let currentAudioArrayBuffer = null;
+        let waveformPeaks = [];
+        let waveformDurationSec = 0;
+        let resizeDrag = null;
+        const AUDIO_PX_PER_SEC = 360;
+        const audioPreview = new Audio();
+        audioPreview.preload = 'metadata';
 
         function clampFrameDurationMs(ms) {
             return Math.max(MIN_FRAME_DURATION_MS, Math.min(MAX_FRAME_DURATION_MS, Math.round(Number(ms) || DEFAULT_FRAME_DURATION_MS)));
@@ -697,6 +757,379 @@
             renderGridFrame(currentFrame);
             renderFrameInfo();
             renderThumbnails();
+            renderAudioSyncPanel();
+            updateEditorModeUI();
+        }
+
+        function setEditorMode(mode) {
+            editorMode = mode === 'audio' ? 'audio' : 'timeline';
+            updateEditorModeUI();
+            if (editorMode !== 'audio') stopAudioPreview();
+        }
+
+        function updateEditorModeUI() {
+            const timelineBtn = document.getElementById('modeTimelineBtn');
+            const audioBtn = document.getElementById('modeAudioBtn');
+            const frameListEl = document.getElementById('frameList');
+            const audioPanel = document.getElementById('audioModePanel');
+            if (timelineBtn) timelineBtn.classList.toggle('active', editorMode === 'timeline');
+            if (audioBtn) audioBtn.classList.toggle('active', editorMode === 'audio');
+            if (frameListEl) frameListEl.style.display = editorMode === 'timeline' ? '' : 'none';
+            if (audioPanel) audioPanel.classList.toggle('show', editorMode === 'audio');
+        }
+
+        function formatSec(sec) {
+            const n = Number(sec);
+            if (!Number.isFinite(n) || n < 0) return '0.000s';
+            return `${n.toFixed(3)}s`;
+        }
+
+        function setupAudioPreviewFromFile(file) {
+            if (!file) return;
+            stopAudioPreview();
+            try {
+                if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+            } catch {}
+            audioPreviewUrl = URL.createObjectURL(file);
+            audioPreview.src = audioPreviewUrl;
+            audioPreview.load();
+        }
+
+        function setupAudioPreviewFromArrayBuffer(buf, fileName = 'converted.ogg') {
+            if (!buf) return;
+            stopAudioPreview();
+            try {
+                if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+            } catch {}
+            const blob = new Blob([buf], { type: 'audio/ogg' });
+            audioPreviewUrl = URL.createObjectURL(blob);
+            audioPreview.src = audioPreviewUrl;
+            audioPreview.load();
+            pendingAudioName = fileName;
+        }
+
+        async function buildWaveformFromArrayBuffer(arrayBuffer) {
+            if (!arrayBuffer) {
+                waveformPeaks = [];
+                waveformDurationSec = 0;
+                renderAudioSyncPanel();
+                return;
+            }
+            try {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (!Ctx) return;
+                const ctx = new Ctx();
+                const copy = arrayBuffer.slice(0);
+                const decoded = await ctx.decodeAudioData(copy);
+                const channel = decoded.numberOfChannels > 0 ? decoded.getChannelData(0) : null;
+                waveformDurationSec = decoded.duration || 0;
+                if (!channel || !channel.length) {
+                    waveformPeaks = [];
+                } else {
+                    const bucketCount = Math.max(300, Math.min(2400, Math.floor(waveformDurationSec * 220)));
+                    const step = Math.max(1, Math.floor(channel.length / bucketCount));
+                    const peaks = new Array(bucketCount).fill(0);
+                    for (let i = 0; i < bucketCount; i++) {
+                        const start = i * step;
+                        const end = Math.min(channel.length, start + step);
+                        let max = 0;
+                        for (let j = start; j < end; j++) {
+                            const v = Math.abs(channel[j]);
+                            if (v > max) max = v;
+                        }
+                        peaks[i] = max;
+                    }
+                    waveformPeaks = peaks;
+                }
+                if (ctx.state !== 'closed') await ctx.close();
+            } catch {
+                waveformPeaks = [];
+                waveformDurationSec = Number(lastAudioDurationSec) || 0;
+            }
+            renderAudioSyncPanel();
+        }
+
+        function buildLogicalFrameList() {
+            return buildFrameStacks().map((s, idx) => ({
+                logicalIndex: idx,
+                start: s.start,
+                end: s.end,
+                durationMs: s.repeats * FRAME_MS
+            }));
+        }
+
+        function frameToMiniThumb(container, frame) {
+            container.innerHTML = '';
+            for (let i = 0; i < TOTAL_PIXELS; i++) {
+                const d = document.createElement('div');
+                d.className = 't' + (LED_MASK[i] === 0 ? ' d' : '');
+                if (LED_MASK[i] === 1 && (frame[i] || 0) > 0) {
+                    d.style.background = `rgba(255,255,255,${(frame[i] || 0) / 4095})`;
+                }
+                container.appendChild(d);
+            }
+        }
+
+        function drawWaveform(canvas, canvasWidthPx, canvasHeightPx, waveWidthPx) {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.max(1, Math.floor(canvasWidthPx * dpr));
+            canvas.height = Math.max(1, Math.floor(canvasHeightPx * dpr));
+            canvas.style.width = `${Math.max(1, canvasWidthPx)}px`;
+            canvas.style.height = `${Math.max(1, canvasHeightPx)}px`;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, canvasWidthPx, canvasHeightPx);
+            ctx.fillStyle = '#0f0f0f';
+            ctx.fillRect(0, 0, canvasWidthPx, canvasHeightPx);
+            const mid = canvasHeightPx / 2;
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, mid);
+            ctx.lineTo(canvasWidthPx, mid);
+            ctx.stroke();
+            if (!waveformPeaks.length) return;
+            ctx.strokeStyle = '#8d8d8d';
+            ctx.lineWidth = 1;
+            const drawWidth = Math.max(1, Math.min(canvasWidthPx, waveWidthPx));
+            const step = drawWidth / waveformPeaks.length;
+            for (let i = 0; i < waveformPeaks.length; i++) {
+                const amp = Math.max(0, Math.min(1, waveformPeaks[i]));
+                const h = Math.max(1, amp * (canvasHeightPx * 0.45));
+                const x = i * step;
+                ctx.beginPath();
+                ctx.moveTo(x, mid - h);
+                ctx.lineTo(x, mid + h);
+                ctx.stroke();
+            }
+        }
+
+        function renderAudioSyncPanel() {
+            const overlay = document.getElementById('audioFrameOverlay');
+            const playhead = document.getElementById('audioPlayhead');
+            const note = document.getElementById('audioModeNote');
+            const seek = document.getElementById('audioSeek');
+            const timeInfo = document.getElementById('audioTimeInfo');
+            const editorCanvas = document.getElementById('audioEditorCanvas');
+            const waveCanvas = document.getElementById('audioWaveCanvas');
+            const scroll = document.getElementById('audioEditorScroll');
+            if (!overlay || !playhead || !note || !seek || !timeInfo || !editorCanvas || !waveCanvas || !scroll) return;
+            overlay.onmousedown = onAudioOverlayPointerDown;
+
+            const logical = buildLogicalFrameList();
+            const animTotalMs = logical.reduce((a, f) => a + f.durationMs, 0);
+            const audioSec = Number(lastAudioDurationSec);
+            const hasAudio = Number.isFinite(audioSec) && audioSec > 0;
+            const audioMs = hasAudio ? audioSec * 1000 : 0;
+            const pxPerMs = AUDIO_PX_PER_SEC / 1000;
+            const audioWidthPx = audioMs * pxPerMs;
+            const animWidthPx = animTotalMs * pxPerMs;
+            const widthPx = Math.max(scroll.clientWidth || 320, Math.ceil(Math.max(audioWidthPx, animWidthPx, 320)));
+            editorCanvas.style.width = `${widthPx}px`;
+            const waveHeightPx = Math.max(24, Math.round(parseFloat(getComputedStyle(waveCanvas).height) || 78));
+            drawWaveform(waveCanvas, widthPx, waveHeightPx, audioWidthPx);
+
+            overlay.innerHTML = '';
+            audioSegments = [];
+            let cursorMs = 0;
+            logical.forEach((f, idx) => {
+                const seg = document.createElement('div');
+                seg.className = 'audio-frame-block';
+                const segStartMs = cursorMs;
+                const leftPx = segStartMs * pxPerMs;
+                const segWidthPx = Math.max(12, f.durationMs * pxPerMs);
+                seg.style.left = `${leftPx}px`;
+                seg.style.width = `${segWidthPx}px`;
+                seg.dataset.frameStart = String(f.start);
+                seg.dataset.startMs = String(segStartMs);
+                seg.dataset.frameIndex = String(idx);
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.innerText = `F${idx + 1}`;
+                seg.appendChild(label);
+
+                const thumb = document.createElement('div');
+                thumb.className = 'audio-frame-thumb';
+                frameToMiniThumb(thumb, frames[f.start]);
+                seg.appendChild(thumb);
+
+                const handle = document.createElement('div');
+                handle.className = 'audio-resize-handle';
+                handle.onmousedown = (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    resizeDrag = {
+                        startX: ev.clientX,
+                        startDurationMs: f.durationMs,
+                        frameStart: f.start,
+                        frameIndex: idx,
+                        previewWidthPx: segWidthPx,
+                        pxPerMs
+                    };
+                    document.body.style.userSelect = 'none';
+                };
+                seg.appendChild(handle);
+
+                overlay.appendChild(seg);
+                audioSegments.push({
+                    startMs: segStartMs,
+                    endMs: segStartMs + f.durationMs,
+                    startFrame: f.start,
+                    el: seg,
+                    pxPerMs
+                });
+                cursorMs += f.durationMs;
+            });
+
+            if (!logical.length) {
+                note.innerText = 'No frames available.';
+            } else if (!hasAudio) {
+                note.innerText = 'Load an audio file to align frames to audio time.';
+            } else {
+                note.innerText = `Audio: ${formatSec(audioSec)} | Animation: ${formatSec(animTotalMs / 1000)}`;
+            }
+
+            if (!hasAudio) {
+                seek.value = '0';
+                timeInfo.innerHTML = `<span>0.000s</span><span>no audio</span>`;
+                playhead.style.left = '0px';
+            } else {
+                const cur = Number(audioPreview.currentTime) || 0;
+                const pct = Math.max(0, Math.min(1, cur / audioSec));
+                seek.value = String(pct);
+                timeInfo.innerHTML = `<span>${formatSec(cur)}</span><span>${formatSec(audioSec)}</span>`;
+                playhead.style.left = `${cur * 1000 * pxPerMs}px`;
+            }
+
+            const active = getLogicalFrameAtTime((Number(audioPreview.currentTime) || 0) * 1000);
+            audioSegments.forEach((s, i) => s.el.classList.toggle('active', i === active));
+        }
+
+        function getLogicalFrameAtTime(ms) {
+            if (!audioSegments.length) return -1;
+            const t = Math.max(0, Number(ms) || 0);
+            for (let i = 0; i < audioSegments.length; i++) {
+                if (t >= audioSegments[i].startMs && t < audioSegments[i].endMs) return i;
+            }
+            return audioSegments.length - 1;
+        }
+
+        function updateAudioSyncTick() {
+            const audioSec = Number(lastAudioDurationSec);
+            const hasAudio = Number.isFinite(audioSec) && audioSec > 0;
+            if (!hasAudio) {
+                renderAudioSyncPanel();
+                return;
+            }
+            const ms = (Number(audioPreview.currentTime) || 0) * 1000;
+            const idx = getLogicalFrameAtTime(ms);
+            if (idx >= 0 && audioSegments[idx]) {
+                const target = audioSegments[idx].startFrame;
+                if (target !== currentFrame) {
+                    stopPreview(true);
+                    currentFrame = target;
+                    renderGridFrame(currentFrame);
+                    renderFrameInfo();
+                    updateActiveThumbnail();
+                }
+            }
+            renderAudioSyncPanel();
+            if (!audioPreview.paused && !audioPreview.ended) {
+                audioAnimRaf = requestAnimationFrame(updateAudioSyncTick);
+            } else {
+                const btn = document.getElementById('audioPreviewPlayBtn');
+                if (btn) btn.innerText = 'Play Audio';
+                audioAnimRaf = null;
+            }
+        }
+
+        function toggleAudioPreview() {
+            const audioSec = Number(lastAudioDurationSec);
+            if (!Number.isFinite(audioSec) || audioSec <= 0 || !audioPreview.src) {
+                return alert('Please load an audio file first.');
+            }
+            const btn = document.getElementById('audioPreviewPlayBtn');
+            if (!audioPreview.paused && !audioPreview.ended) {
+                audioPreview.pause();
+                if (btn) btn.innerText = 'Play Audio';
+                if (audioAnimRaf !== null) cancelAnimationFrame(audioAnimRaf);
+                audioAnimRaf = null;
+                return;
+            }
+            audioPreview.play().then(() => {
+                if (btn) btn.innerText = 'Pause Audio';
+                if (audioAnimRaf !== null) cancelAnimationFrame(audioAnimRaf);
+                audioAnimRaf = requestAnimationFrame(updateAudioSyncTick);
+            }).catch((err) => {
+                alert('Audio playback failed: ' + (err && err.message ? err.message : String(err)));
+            });
+        }
+
+        function stopAudioPreview() {
+            audioPreview.pause();
+            try { audioPreview.currentTime = 0; } catch {}
+            if (audioAnimRaf !== null) cancelAnimationFrame(audioAnimRaf);
+            audioAnimRaf = null;
+            const btn = document.getElementById('audioPreviewPlayBtn');
+            if (btn) btn.innerText = 'Play Audio';
+            renderAudioSyncPanel();
+        }
+
+        function seekAudioPreview(value) {
+            const audioSec = Number(lastAudioDurationSec);
+            if (!Number.isFinite(audioSec) || audioSec <= 0) return;
+            const v = Number(value);
+            const target = v > 1 ? v : v * audioSec;
+            audioPreview.currentTime = Math.max(0, Math.min(audioSec, target));
+            updateAudioSyncTick();
+        }
+
+        function onAudioResizeMove(ev) {
+            if (!resizeDrag) return;
+            const dx = ev.clientX - resizeDrag.startX;
+            const deltaMs = dx / resizeDrag.pxPerMs;
+            const previewMs = clampFrameDurationMs(resizeDrag.startDurationMs + deltaMs);
+            const seg = audioSegments[resizeDrag.frameIndex] && audioSegments[resizeDrag.frameIndex].el;
+            if (seg) {
+                const newWidth = Math.max(12, previewMs * resizeDrag.pxPerMs);
+                seg.style.width = `${newWidth}px`;
+                const lbl = seg.querySelector('.label');
+                if (lbl) lbl.innerText = `F${resizeDrag.frameIndex + 1} • ${Math.round(previewMs)}ms`;
+            }
+        }
+
+        function onAudioResizeUp(ev) {
+            if (!resizeDrag) return;
+            const dx = ev.clientX - resizeDrag.startX;
+            const deltaMs = dx / resizeDrag.pxPerMs;
+            const finalMs = clampFrameDurationMs(resizeDrag.startDurationMs + deltaMs);
+            const frameStart = resizeDrag.frameStart;
+            resizeDrag = null;
+            document.body.style.userSelect = '';
+            applyRunDurationByStart(frameStart, finalMs, true);
+            renderAudioSyncPanel();
+        }
+
+        function onAudioOverlayPointerDown(ev) {
+            const overlay = document.getElementById('audioFrameOverlay');
+            if (!overlay) return;
+            if (ev.target && ev.target.closest('.audio-resize-handle')) return;
+            const rect = overlay.getBoundingClientRect();
+            const x = ev.clientX - rect.left + (document.getElementById('audioEditorScroll')?.scrollLeft || 0);
+            const tMs = x / (AUDIO_PX_PER_SEC / 1000);
+            const idx = getLogicalFrameAtTime(tMs);
+            if (idx >= 0 && audioSegments[idx]) {
+                stopPreview(true);
+                currentFrame = audioSegments[idx].startFrame;
+                renderGridFrame(currentFrame);
+                renderFrameInfo();
+                updateActiveThumbnail();
+                if (Number.isFinite(lastAudioDurationSec) && lastAudioDurationSec > 0) {
+                    seekAudioPreview(tMs / 1000);
+                }
+            }
         }
 
         function updateActiveThumbnail() {
@@ -1587,7 +2020,10 @@
                 if (!parsed || !parsed.b64) return;
                 const bytes = base64ToUint8Array(parsed.b64);
                 pendingAudioArrayBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+                currentAudioArrayBuffer = pendingAudioArrayBuffer.slice(0);
                 pendingAudioName = sanitizeFileName(parsed.name || 'converted.ogg') || 'converted.ogg';
+                setupAudioPreviewFromArrayBuffer(pendingAudioArrayBuffer, pendingAudioName);
+                buildWaveformFromArrayBuffer(currentAudioArrayBuffer);
 
                 const pages = parseOggPages(new Uint8Array(pendingAudioArrayBuffer));
                 const packets = extractPackets(new Uint8Array(pendingAudioArrayBuffer), pages).packets;
@@ -1596,6 +2032,7 @@
                 const codec = isVorbis ? 'vorbis' : (isOpus ? 'opus' : '');
                 if (codec) lastAudioDurationSec = getAudioDurationSecondsFromOgg(pages, packets, codec);
                 updateExportWarning();
+                renderAudioSyncPanel();
                 showToast(`Using converted audio: ${pendingAudioName}`);
             } catch {
                 pendingAudioArrayBuffer = null;
@@ -1680,15 +2117,20 @@
             if (file) {
                 pendingAudioArrayBuffer = null;
                 pendingAudioName = '';
+                setupAudioPreviewFromFile(file);
             }
             if (!file) {
                 lastAudioDurationSec = null;
+                currentAudioArrayBuffer = null;
                 updateExportWarning();
+                buildWaveformFromArrayBuffer(null);
+                renderAudioSyncPanel();
                 return;
             }
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
+                    currentAudioArrayBuffer = e.target.result.slice(0);
                     const bytesView = new Uint8Array(e.target.result);
                     const pages = parseOggPages(bytesView);
                     const packets = extractPackets(bytesView, pages).packets;
@@ -1701,10 +2143,15 @@
                     lastAudioDurationSec = null;
                 }
                 updateExportWarning();
+                buildWaveformFromArrayBuffer(currentAudioArrayBuffer);
+                renderAudioSyncPanel();
             };
             reader.onerror = () => {
                 lastAudioDurationSec = null;
                 updateExportWarning();
+                currentAudioArrayBuffer = null;
+                buildWaveformFromArrayBuffer(null);
+                renderAudioSyncPanel();
             };
             reader.readAsArrayBuffer(file);
         }
@@ -1950,6 +2397,20 @@
             restoreAutosaveIfAny();
             consumePendingGalleryImport();
             consumePendingConvertedAudio();
+            audioPreview.addEventListener('loadedmetadata', () => {
+                if (Number.isFinite(audioPreview.duration) && audioPreview.duration > 0) {
+                    lastAudioDurationSec = audioPreview.duration;
+                    updateExportWarning();
+                    renderAudioSyncPanel();
+                }
+            });
+            audioPreview.addEventListener('ended', () => {
+                const btn = document.getElementById('audioPreviewPlayBtn');
+                if (btn) btn.innerText = 'Play Audio';
+                if (audioAnimRaf !== null) cancelAnimationFrame(audioAnimRaf);
+                audioAnimRaf = null;
+                renderAudioSyncPanel();
+            });
             const titleInput = document.getElementById('titleInput');
             if (titleInput) {
                 titleInput.addEventListener('input', queueAutosave);
@@ -1970,7 +2431,15 @@
             }
         });
 
+        window.addEventListener('mousemove', onAudioResizeMove);
+        window.addEventListener('mouseup', onAudioResizeUp);
+
         window.addEventListener('beforeunload', saveProjectState);
+        window.addEventListener('beforeunload', () => {
+            try {
+                if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+            } catch {}
+        });
     </script>
 </body>
 </html>
