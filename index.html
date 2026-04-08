@@ -189,6 +189,12 @@
         const MIN_FRAME_DURATION_MS = 100;
         const MAX_FRAME_DURATION_MS = 3000;
         const DEFAULT_FRAME_DURATION_MS = 100;
+        const REQUIRED_GLYPH_TAGS = {
+            CUSTOM1: 'eNpTAAAAIQAh',
+            CUSTOM2: '169cols',
+            COMPOSER: 'v1-FroggerPro Glyph Composer',
+            TLEN: '8880'
+        };
         const MAX_EXPORT_FRAMES = 1200; // Safety cap to avoid oversized metadata breaking playback
 
         const LED_MASK = [
@@ -232,7 +238,10 @@
         const MAX_HISTORY = 80;
         let saveDebounce = null;
         const AUTOSAVE_KEY = 'glyphComposerAutosaveV2';
+        const PENDING_AUDIO_KEY = 'glyphComposerPendingAudioV1';
         let lastAudioDurationSec = null;
+        let pendingAudioArrayBuffer = null;
+        let pendingAudioName = '';
 
         function clampFrameDurationMs(ms) {
             return Math.max(MIN_FRAME_DURATION_MS, Math.min(MAX_FRAME_DURATION_MS, Math.round(Number(ms) || DEFAULT_FRAME_DURATION_MS)));
@@ -1315,6 +1324,22 @@
             return filtered;
         }
 
+        function replaceGlyphCommentsWithStableOrder(comments, authorB64, title) {
+            const keysToReplace = new Set(['CUSTOM1', 'COMPOSER', 'CUSTOM2', 'TLEN', 'AUTHOR', 'TITLE']);
+            const kept = comments.filter(c => {
+                const eq = c.indexOf('=');
+                if (eq <= 0) return true;
+                return !keysToReplace.has(c.slice(0, eq).toUpperCase());
+            });
+            kept.push(`CUSTOM1=${REQUIRED_GLYPH_TAGS.CUSTOM1}`);
+            kept.push(`COMPOSER=${REQUIRED_GLYPH_TAGS.COMPOSER}`);
+            kept.push(`CUSTOM2=${REQUIRED_GLYPH_TAGS.CUSTOM2}`);
+            kept.push(`TLEN=${REQUIRED_GLYPH_TAGS.TLEN}`);
+            kept.push(`AUTHOR=${authorB64}`);
+            kept.push(`TITLE=${title}`);
+            return kept;
+        }
+
         function sanitizeFileName(name) {
             const base = String(name || "").trim();
             if (!base) return "";
@@ -1498,21 +1523,11 @@
 
             if (isVorbis) {
                 const parsed = parseVorbisComment(packets[1]);
-                let comments = upsertComment(parsed.comments, 'AUTHOR', b64);
-                comments = upsertComment(comments, 'TITLE', title);
-                comments = upsertComment(comments, 'CUSTOM1', 'eNpTAAAAIQAh');
-                comments = upsertComment(comments, 'CUSTOM2', '169cols');
-                comments = upsertComment(comments, 'COMPOSER', 'v1-FroggerPro Glyph Composer');
-                comments = upsertComment(comments, 'TLEN', '8880');
+                const comments = replaceGlyphCommentsWithStableOrder(parsed.comments, b64, title);
                 packets[1] = buildVorbisCommentPacket(parsed.vendor, comments);
             } else {
                 const parsed = parseOpusTags(packets[1]);
-                let comments = upsertComment(parsed.comments, 'AUTHOR', b64);
-                comments = upsertComment(comments, 'TITLE', title);
-                comments = upsertComment(comments, 'CUSTOM1', 'eNpTAAAAIQAh');
-                comments = upsertComment(comments, 'CUSTOM2', '169cols');
-                comments = upsertComment(comments, 'COMPOSER', 'v1-FroggerPro Glyph Composer');
-                comments = upsertComment(comments, 'TLEN', '8880');
+                const comments = replaceGlyphCommentsWithStableOrder(parsed.comments, b64, title);
                 packets[1] = buildOpusTagsPacket(parsed.vendor, comments);
             }
 
@@ -1523,28 +1538,70 @@
             };
         }
 
-        function hasGlyphAuthorMetadata(arrayBuffer) {
+        function extractGlyphCommentInfo(arrayBuffer) {
             try {
                 const bytes = new Uint8Array(arrayBuffer);
                 const pages = parseOggPages(bytes);
                 const { packets } = extractPackets(bytes, pages);
-                if (!packets.length) return false;
+                if (!packets.length) return { ok: false, reason: 'No packets found' };
 
                 const isVorbis = startsWithBytes(packets[0], [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
                 const isOpus = startsWithBytes(packets[0], [0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64]);
-                if (!isVorbis && !isOpus) return false;
-                if (packets.length < 2) return false;
+                if (!isVorbis && !isOpus) return { ok: false, reason: 'Unsupported codec' };
+                if (packets.length < 2) return { ok: false, reason: 'Missing comment packet' };
 
                 const parsed = isVorbis ? parseVorbisComment(packets[1]) : parseOpusTags(packets[1]);
-                return parsed.comments.some((c) => {
+                const tags = {};
+                parsed.comments.forEach((c) => {
                     const eq = c.indexOf('=');
-                    if (eq <= 0) return false;
+                    if (eq <= 0) return;
                     const key = c.slice(0, eq).toUpperCase();
                     const val = c.slice(eq + 1);
-                    return key === 'AUTHOR' && val.length > 0;
+                    tags[key] = val;
                 });
+                const missing = [];
+                if (!tags.AUTHOR || !tags.AUTHOR.length) missing.push('AUTHOR');
+                if (!tags.TITLE || !tags.TITLE.length) missing.push('TITLE');
+                if (tags.CUSTOM1 !== REQUIRED_GLYPH_TAGS.CUSTOM1) missing.push('CUSTOM1');
+                if (tags.CUSTOM2 !== REQUIRED_GLYPH_TAGS.CUSTOM2) missing.push('CUSTOM2');
+                if (tags.COMPOSER !== REQUIRED_GLYPH_TAGS.COMPOSER) missing.push('COMPOSER');
+                if (tags.TLEN !== REQUIRED_GLYPH_TAGS.TLEN) missing.push('TLEN');
+                return { ok: missing.length === 0, missing, tags, codec: isVorbis ? 'vorbis' : 'opus' };
             } catch {
-                return false;
+                return { ok: false, reason: 'Metadata parse failed' };
+            }
+        }
+
+        function base64ToUint8Array(b64) {
+            const bin = atob(String(b64 || ''));
+            const out = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+            return out;
+        }
+
+        function consumePendingConvertedAudio() {
+            try {
+                const raw = sessionStorage.getItem(PENDING_AUDIO_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (!parsed || !parsed.b64) return;
+                const bytes = base64ToUint8Array(parsed.b64);
+                pendingAudioArrayBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+                pendingAudioName = sanitizeFileName(parsed.name || 'converted.ogg') || 'converted.ogg';
+
+                const pages = parseOggPages(new Uint8Array(pendingAudioArrayBuffer));
+                const packets = extractPackets(new Uint8Array(pendingAudioArrayBuffer), pages).packets;
+                const isVorbis = startsWithBytes(packets[0] || new Uint8Array(), [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+                const isOpus = startsWithBytes(packets[0] || new Uint8Array(), [0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64]);
+                const codec = isVorbis ? 'vorbis' : (isOpus ? 'opus' : '');
+                if (codec) lastAudioDurationSec = getAudioDurationSecondsFromOgg(pages, packets, codec);
+                updateExportWarning();
+                showToast(`Using converted audio: ${pendingAudioName}`);
+            } catch {
+                pendingAudioArrayBuffer = null;
+                pendingAudioName = '';
+            } finally {
+                try { sessionStorage.removeItem(PENDING_AUDIO_KEY); } catch {}
             }
         }
 
@@ -1552,18 +1609,16 @@
             const fileInput = document.getElementById('audioInput');
             const titleInput = document.getElementById('titleInput');
             const file = fileInput.files[0];
-            if (!file) return alert('Please select an .ogg file first.');
+            if (!file && !pendingAudioArrayBuffer) return alert('Please select an .ogg file first.');
 
             const typedTitle = sanitizeFileName(titleInput ? titleInput.value : "");
-            const defaultTitle = sanitizeFileName(getFileBaseName(file.name)) || "glyph_ringtone";
+            const sourceName = file ? file.name : pendingAudioName;
+            const defaultTitle = sanitizeFileName(getFileBaseName(sourceName)) || "glyph_ringtone";
             const finalTitle = typedTitle || defaultTitle;
             if (titleInput && !titleInput.value.trim()) titleInput.value = finalTitle;
 
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
+            const handleBuffer = (originalBytes) => {
                 try {
-                    const originalBytes = e.target.result;
                     const bytesView = new Uint8Array(originalBytes);
                     const pages = parseOggPages(bytesView);
                     const packets = extractPackets(bytesView, pages).packets;
@@ -1593,9 +1648,9 @@
                         bakedBytes.byteOffset,
                         bakedBytes.byteOffset + bakedBytes.byteLength
                     );
-                    const hasMeta = hasGlyphAuthorMetadata(verifyBuffer);
-                    if (!hasMeta) {
-                        alert('Bake failed: Glyph metadata could not be verified in output OGG. Please try another OGG source file.');
+                    const info = extractGlyphCommentInfo(verifyBuffer);
+                    if (!info.ok) {
+                        alert(`Bake failed: Required tags are missing/invalid (${(info.missing || []).join(', ') || info.reason || 'unknown error'}).`);
                         return;
                     }
 
@@ -1610,12 +1665,22 @@
                 }
             };
 
-            reader.onerror = () => alert('Could not read the selected audio file.');
-            reader.readAsArrayBuffer(file);
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => handleBuffer(e.target.result);
+                reader.onerror = () => alert('Could not read the selected audio file.');
+                reader.readAsArrayBuffer(file);
+            } else {
+                handleBuffer(pendingAudioArrayBuffer);
+            }
         }
 
         function handleAudioSelectionChange(event) {
             const file = event.target.files && event.target.files[0];
+            if (file) {
+                pendingAudioArrayBuffer = null;
+                pendingAudioName = '';
+            }
             if (!file) {
                 lastAudioDurationSec = null;
                 updateExportWarning();
@@ -1884,6 +1949,7 @@
             renderUI();
             restoreAutosaveIfAny();
             consumePendingGalleryImport();
+            consumePendingConvertedAudio();
             const titleInput = document.getElementById('titleInput');
             if (titleInput) {
                 titleInput.addEventListener('input', queueAutosave);
