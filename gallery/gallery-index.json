@@ -1,3 +1,16 @@
-﻿[
- { "title": "First Animation :)", "file": "glyph_animation (1).json" }
+[
+  {
+    "title": "test 2",
+    "file": "test-2-3.json",
+    "submittedBy": "itssveennn",
+    "submittedAt": "2026-04-09T21:29:54Z",
+    "issueNumber": 3
+  },
+  {
+    "title": "test pacman",
+    "file": "test-pacman-2.json",
+    "submittedBy": "itssveennn",
+    "submittedAt": "2026-04-09T21:26:10Z",
+    "issueNumber": 2
+  }
 ]
