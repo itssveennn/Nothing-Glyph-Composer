@@ -51,6 +51,7 @@
 
     <div class="section submit-card">
         <h2>Submit Your Animation</h2>
+        <div class="meta">After review, approved submissions are published automatically.</div>
         <div class="submit-row">
             <input id="submitTitle" type="text" placeholder="Animation title">
             <input id="submitFile" type="file" accept=".json,application/json">
@@ -298,7 +299,10 @@
 
             const meta = document.createElement('div');
             meta.className = 'meta';
-            meta.textContent = `${frames.length} frames`;
+            const dateText = item.submittedAt ? new Date(item.submittedAt).toLocaleDateString() : '';
+            const byText = item.submittedBy ? ` by @${item.submittedBy}` : '';
+            const when = dateText ? ` • ${dateText}` : '';
+            meta.textContent = `${frames.length} frames${byText}${when}`;
 
             const actions = document.createElement('div');
             actions.className = 'card-actions';
@@ -348,7 +352,12 @@
                         const fileRes = await fetch(`gallery/${entry.file}`, { cache: 'no-store' });
                         if (!fileRes.ok) continue;
                         const json = await fileRes.json();
-                        createCard({ title: entry.title || entry.file, json }, grid);
+                        createCard({
+                            title: entry.title || entry.file,
+                            json,
+                            submittedBy: entry.submittedBy || '',
+                            submittedAt: entry.submittedAt || ''
+                        }, grid);
                     } catch {
                         // skip invalid entries
                     }

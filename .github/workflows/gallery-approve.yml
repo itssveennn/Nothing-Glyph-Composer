@@ -1,0 +1,167 @@
+name: Publish Gallery Submission
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  publish:
+    if: github.event.label.name == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse issue and prepare gallery files
+        id: prepare
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            function setResult(status, message, extra = {}) {
+              core.setOutput('status', status);
+              core.setOutput('message', message);
+              for (const [k, v] of Object.entries(extra)) core.setOutput(k, String(v));
+            }
+
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const issueNumber = issue.number;
+            const submittedBy = issue.user?.login || 'unknown';
+            const submittedAt = issue.created_at || new Date().toISOString();
+
+            const titleMatch = body.match(/\*\*Title:\*\*\s*(.+)/i);
+            const rawTitle = titleMatch ? titleMatch[1].trim() : `Submission ${issueNumber}`;
+
+            let jsonText = null;
+            const sectionMatch = body.match(/####\s*Animation JSON[\s\S]*?```json\s*([\s\S]*?)```/i);
+            if (sectionMatch && sectionMatch[1]) jsonText = sectionMatch[1].trim();
+            if (!jsonText) {
+              const fenceMatch = body.match(/```json\s*([\s\S]*?)```/i);
+              if (fenceMatch && fenceMatch[1]) jsonText = fenceMatch[1].trim();
+            }
+
+            if (!jsonText) {
+              setResult('error', 'No JSON block found in issue body. Please use a ```json ... ``` block under "Animation JSON".');
+              return;
+            }
+
+            let parsed;
+            try {
+              parsed = JSON.parse(jsonText);
+            } catch (err) {
+              setResult('error', `Invalid JSON: ${err.message}`);
+              return;
+            }
+
+            if (!parsed || !Array.isArray(parsed.frames) || parsed.frames.length === 0) {
+              setResult('error', 'JSON must contain a non-empty "frames" array.');
+              return;
+            }
+
+            const indexPath = path.join(process.cwd(), 'gallery', 'gallery-index.json');
+            const indexRaw = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '[]';
+
+            let index = [];
+            try {
+              index = JSON.parse(indexRaw);
+              if (!Array.isArray(index)) index = [];
+            } catch {
+              index = [];
+            }
+
+            if (index.some((entry) => Number(entry.issueNumber) === Number(issueNumber))) {
+              setResult('already_published', 'This submission was already published.');
+              return;
+            }
+
+            const slug = rawTitle
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+              .slice(0, 60) || `submission-${issueNumber}`;
+            const fileName = `${slug}-${issueNumber}.json`;
+            const filePath = path.join(process.cwd(), 'gallery', fileName);
+
+            fs.writeFileSync(filePath, JSON.stringify(parsed, null, 2) + '\n', 'utf8');
+
+            index.unshift({
+              title: rawTitle,
+              file: fileName,
+              submittedBy,
+              submittedAt,
+              issueNumber
+            });
+
+            fs.writeFileSync(indexPath, JSON.stringify(index, null, 2) + '\n', 'utf8');
+
+            setResult('ok', 'Published successfully.', { file: fileName, title: rawTitle });
+
+      - name: Commit and push
+        if: steps.prepare.outputs.status == 'ok'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gallery
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Publish gallery submission #${{ github.event.issue.number }}"
+          git push
+
+      - name: Comment success and close issue
+        if: steps.prepare.outputs.status == 'ok'
+        uses: actions/github-script@v7
+        env:
+          PUBLISHED_FILE: ${{ steps.prepare.outputs.file }}
+          PUBLISHED_TITLE: ${{ steps.prepare.outputs.title }}
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+            const file = process.env.PUBLISHED_FILE;
+            const title = process.env.PUBLISHED_TITLE;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `Approved and published.\n\n- Title: ${title}\n- File: \`gallery/${file}\`\n\nThe animation will appear in Gallery after Pages updates.`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed'
+            });
+
+      - name: Comment already published
+        if: steps.prepare.outputs.status == 'already_published'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: 'This submission is already published in the gallery.'
+            });
+
+      - name: Comment validation error
+        if: steps.prepare.outputs.status == 'error'
+        uses: actions/github-script@v7
+        env:
+          ERROR_MESSAGE: ${{ steps.prepare.outputs.message }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `Submission could not be published.\n\n${process.env.ERROR_MESSAGE}`
+            });
