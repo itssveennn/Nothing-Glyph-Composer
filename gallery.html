@@ -28,7 +28,14 @@
         .use-btn { background: #ff3131; color: #fff; font-weight: bold; }
         .play-btn:hover, .use-btn:hover { transform: translateY(-1px); }
         .footer { margin-top: 20px; font-size: 0.75em; color: #888; }
-        @media (max-width: 760px) { body { padding: 12px; } .grid { grid-template-columns: 1fr; gap: 10px; } .card-actions { gap: 6px; } .play-btn, .use-btn { flex: 1; } }
+        .submit-card { margin-top: 8px; margin-bottom: 14px; background: linear-gradient(180deg, #1b1b1b, #161616); border: 1px solid #343434; border-radius: 12px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); position: sticky; top: 10px; z-index: 10; }
+        .submit-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+        .submit-row input[type="text"] { flex: 1; min-width: 210px; border: 1px solid #444; background: #101010; color: #fff; border-radius: 8px; padding: 9px 10px; }
+        .submit-row input[type="file"] { color: #ddd; }
+        .submit-btn { border: 1px solid #555; background: #2b2b2b; color: #fff; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 0.84em; }
+        .submit-btn.primary { background: #ff3131; border-color: #be1d1d; }
+        .submit-status { margin-top: 8px; font-size: 0.8em; color: #c6c6c6; white-space: pre-wrap; min-height: 18px; }
+        @media (max-width: 760px) { body { padding: 12px; } .grid { grid-template-columns: 1fr; gap: 10px; } .card-actions { gap: 6px; } .play-btn, .use-btn { flex: 1; } .submit-card { position: static; } .submit-row { flex-direction: column; align-items: stretch; } .submit-row .submit-btn { width: 100%; } }
     </style>
 </head>
 <body>
@@ -42,6 +49,19 @@
     <h1>Gallery</h1>
     <div class="subtitle">Browse published animations and click "Use" to open one in Glyph Composer.</div>
 
+    <div class="section submit-card">
+        <h2>Submit Your Animation</h2>
+        <div class="submit-row">
+            <input id="submitTitle" type="text" placeholder="Animation title">
+            <input id="submitFile" type="file" accept=".json,application/json">
+        </div>
+        <div class="submit-row">
+            <button class="submit-btn primary" onclick="openSubmissionIssue()">Submit for Review</button>
+            <button class="submit-btn" onclick="copySubmissionText()">Copy Submission Text</button>
+        </div>
+        <div id="submitStatus" class="submit-status">Choose title and JSON, then click Submit for Review.</div>
+    </div>
+
     <div class="section">
         <h2>Published Animations</h2>
         <div id="sharedGrid" class="grid"></div>
@@ -53,6 +73,9 @@
         const TOTAL_PIXELS = 169;
         const PENDING_IMPORT_KEY = 'glyphComposerPendingImport';
         const FRAME_MS = 1000 / 60;
+        const REPO_OWNER = 'itssveennn';
+        const REPO_NAME = 'Nothing-Glyph-Composer';
+        let submissionJson = '';
 
         const LED_MASK = [
             0,0,0,0,1,1,1,1,1,0,0,0,0,
@@ -99,6 +122,102 @@
             if (out.length === 0) throw new Error('No valid frames found.');
             return out;
         }
+
+        function setSubmitStatus(text) {
+            const el = document.getElementById('submitStatus');
+            if (el) el.textContent = text;
+        }
+
+        async function prepareSubmission() {
+            const titleEl = document.getElementById('submitTitle');
+            const fileEl = document.getElementById('submitFile');
+            const title = sanitizeTitle(titleEl ? titleEl.value : '');
+            const file = fileEl && fileEl.files ? fileEl.files[0] : null;
+            if (!file) {
+                setSubmitStatus('Please choose a JSON file.');
+                return false;
+            }
+            try {
+                const text = await file.text();
+                const json = JSON.parse(text);
+                const frames = parseAnimationJson(json);
+                submissionJson = JSON.stringify(json);
+                setSubmitStatus(`Ready: "${title}" (${frames.length} frames).`);
+                return true;
+            } catch (err) {
+                submissionJson = '';
+                setSubmitStatus(`Invalid JSON: ${err && err.message ? err.message : String(err)}`);
+                return false;
+            }
+        }
+
+        function buildSubmissionBody(title, jsonSection) {
+            return [
+                '### Gallery Submission',
+                '',
+                `**Title:** ${title}`,
+                '',
+                '#### Animation JSON',
+                jsonSection,
+                '',
+                'I confirm this animation is my own creation.'
+            ].join('\n');
+        }
+
+        async function openSubmissionIssue() {
+            const ok = submissionJson ? true : await prepareSubmission();
+            if (!ok) return;
+            const title = sanitizeTitle(document.getElementById('submitTitle')?.value || '');
+            const issueTitle = `Gallery submission: ${title}`;
+            const fullJsonSection = ['```json', submissionJson, '```'].join('\n');
+            const fullBody = buildSubmissionBody(title, fullJsonSection);
+            const base = `https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/new`;
+            const params = new URLSearchParams({
+                title: issueTitle,
+                body: fullBody
+            });
+            const url = `${base}?${params.toString()}`;
+            if (url.length > 7800) {
+                const placeholderBody = buildSubmissionBody(title, '"input .json animation here"');
+                const fallbackUrl = `${base}?${new URLSearchParams({ title: issueTitle, body: placeholderBody }).toString()}`;
+                try {
+                    await navigator.clipboard.writeText(fullBody);
+                    setSubmitStatus('Issue opened with template. Full JSON is copied to clipboard. Paste it in "Animation JSON".');
+                } catch {
+                    setSubmitStatus('Issue opened with template. Please use "Copy Submission Text" and paste it in "Animation JSON".');
+                }
+                window.open(fallbackUrl, '_blank', 'noopener');
+                return;
+            }
+            try { await navigator.clipboard.writeText(fullBody); } catch {}
+            window.open(url, '_blank', 'noopener');
+            setSubmitStatus('Issue opened with full JSON. Please confirm on GitHub. Submission is then waiting for review.');
+        }
+
+        async function copySubmissionText() {
+            const ok = submissionJson ? true : await prepareSubmission();
+            if (!ok) return;
+            const title = sanitizeTitle(document.getElementById('submitTitle')?.value || '');
+            const fullJsonSection = ['```json', submissionJson, '```'].join('\n');
+            const fullBody = buildSubmissionBody(title, fullJsonSection);
+            try {
+                await navigator.clipboard.writeText(fullBody);
+                setSubmitStatus('Submission text copied to clipboard.');
+            } catch {
+                setSubmitStatus('Clipboard permission blocked. Please allow clipboard access and try again.');
+            }
+        }
+
+        document.getElementById('submitFile')?.addEventListener('change', () => {
+            prepareSubmission();
+        });
+
+        document.getElementById('submitTitle')?.addEventListener('input', () => {
+            if (submissionJson) {
+                const title = sanitizeTitle(document.getElementById('submitTitle')?.value || '');
+                setSubmitStatus(`Ready: "${title}". Click Submit for Review.`);
+            }
+        });
 
         function createPreviewCells(previewEl) {
             const cells = new Array(TOTAL_PIXELS);
