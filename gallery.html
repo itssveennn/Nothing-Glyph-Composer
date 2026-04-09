@@ -6,26 +6,29 @@
     <title>Glyph Gallery</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #fff; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .top-nav { width: 100%; max-width: 1100px; display: flex; justify-content: center; gap: 14px; margin-bottom: 10px; }
-        .top-nav a { color: #bbb; text-decoration: none; font-size: 0.9em; padding: 6px 10px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; }
-        .top-nav a.active { color: #fff; border-color: #ff3131; }
-        h1 { margin: 10px 0 6px 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: radial-gradient(1200px 500px at 50% -120px, #2a2a2a 0%, #151515 40%, #101010 100%); color: #fff; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .top-nav { width: 100%; max-width: 1100px; display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .top-nav a { color: #bbb; text-decoration: none; font-size: 0.88em; padding: 7px 11px; border-radius: 999px; border: 1px solid #3a3a3a; background: #1a1a1a; transition: 0.2s; }
+        .top-nav a:hover { color: #fff; border-color: #585858; transform: translateY(-1px); }
+        .top-nav a.active { color: #fff; border-color: #ff3131; box-shadow: 0 0 0 1px rgba(255,49,49,0.35) inset; }
+        h1 { margin: 10px 0 6px 0; letter-spacing: 0.2px; }
         .subtitle { color: #9a9a9a; font-size: 0.9em; margin-bottom: 20px; text-align: center; }
 
         .section { width: 100%; max-width: 1100px; margin-top: 6px; }
         .section h2 { margin: 6px 0 10px 0; font-size: 1.05em; color: #ddd; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
-        .card { background: #1a1a1a; border: 1px solid #343434; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .card { background: linear-gradient(180deg, #1b1b1b, #161616); border: 1px solid #343434; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
         .preview { width: 100%; aspect-ratio: 1 / 1; background: #000; border-radius: 8px; border: 1px solid #303030; display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; padding: 3px; }
         .px { background: #000; border-radius: 1px; }
         .title { font-weight: bold; font-size: 0.95em; color: #fff; overflow-wrap: anywhere; }
         .meta { font-size: 0.8em; color: #989898; }
         .card-actions { display: flex; gap: 8px; }
-        .play-btn, .use-btn { border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 0.85em; }
+        .play-btn, .use-btn { border: none; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 0.84em; transition: 0.2s; }
         .play-btn { background: #353535; color: #fff; }
         .use-btn { background: #ff3131; color: #fff; font-weight: bold; }
+        .play-btn:hover, .use-btn:hover { transform: translateY(-1px); }
         .footer { margin-top: 20px; font-size: 0.75em; color: #888; }
+        @media (max-width: 760px) { body { padding: 12px; } .grid { grid-template-columns: 1fr; gap: 10px; } .card-actions { gap: 6px; } .play-btn, .use-btn { flex: 1; } }
     </style>
 </head>
 <body>

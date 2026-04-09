@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,27 +6,26 @@
     <title>Tutorial</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #eee; margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center; }
-        .top-nav { width: 100%; max-width: 1050px; display: flex; justify-content: center; gap: 14px; margin-bottom: 12px; }
-        .top-nav a { color: #bbb; text-decoration: none; font-size: 0.9em; padding: 6px 10px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; }
-        .top-nav a.active { color: #fff; border-color: #ff3131; }
-
-        .wrap { width: 100%; max-width: 900px; }
-        h1 { margin: 8px 0 6px 0; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: radial-gradient(1200px 500px at 50% -120px, #2a2a2a 0%, #151515 40%, #101010 100%); color: #eee; margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center; }
+        .top-nav { width: 100%; max-width: 1050px; display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .top-nav a { color: #bbb; text-decoration: none; font-size: 0.88em; padding: 7px 11px; border-radius: 999px; border: 1px solid #3a3a3a; background: #1a1a1a; transition: 0.2s; }
+        .top-nav a:hover { color: #fff; border-color: #585858; transform: translateY(-1px); }
+        .top-nav a.active { color: #fff; border-color: #ff3131; box-shadow: 0 0 0 1px rgba(255,49,49,0.35) inset; }
+        .wrap { width: 100%; max-width: 920px; }
+        h1 { margin: 8px 0 6px 0; text-align: center; letter-spacing: 0.2px; }
         .subtitle { color: #9a9a9a; text-align: center; margin-bottom: 18px; font-size: 0.9em; }
-
-        .card { background: #1a1a1a; border: 1px solid #323232; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .card { background: linear-gradient(180deg, #1b1b1b, #161616); border: 1px solid #323232; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.28); }
         h2 { margin: 0 0 8px 0; font-size: 1.05em; }
         h3 { margin: 10px 0 6px 0; font-size: 0.95em; color: #f0f0f0; }
         p, li { color: #cfcfcf; line-height: 1.5; }
         ul, ol { margin: 0 0 0 18px; padding: 0; }
         code { background: #101010; border: 1px solid #2f2f2f; border-radius: 4px; padding: 1px 5px; color: #f6f6f6; }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
         .mini { background: #171717; border: 1px solid #2f2f2f; border-radius: 10px; padding: 10px; }
         .mini strong { color: #fff; }
         .note { border-left: 3px solid #ff3131; padding-left: 10px; color: #d8d8d8; font-size: 0.9em; }
         .footer { margin-top: 14px; font-size: 0.75em; color: #888; text-align: center; }
+        @media (max-width: 760px) { body { padding: 12px; } .wrap { max-width: 100%; } .card { padding: 12px; } }
     </style>
 </head>
 <body>
@@ -39,99 +38,65 @@
 
     <div class="wrap">
         <h1>Tutorial</h1>
-        <div class="subtitle">Complete guide for the current Glyph Composer workflow.</div>
+        <div class="subtitle">Updated workflow for Glyph Composer + Audio Converter.</div>
 
         <div class="card">
             <h2>1. Quick Start</h2>
             <ol>
                 <li>Open <code>Glyph Composer</code>.</li>
-                <li>Create frames (or load an existing JSON/project).</li>
-                <li>Use stack actions in the timeline to control duration and structure.</li>
-                <li>Select an <code>.ogg</code> file and click <code>Bake &amp; Download OGG</code>.</li>
+                <li>Create frames and tune frame durations in the timeline.</li>
+                <li>Load your audio <code>.ogg</code> file (or use the converter flow).</li>
+                <li>Click <code>Bake &amp; Download OGG</code>.</li>
             </ol>
         </div>
 
         <div class="card">
             <h2>2. Drawing Tools</h2>
             <div class="grid">
-                <div class="mini"><strong>Draw / Erase</strong><p>Paint directly on the 13x13 matrix. Drag works for continuous editing.</p></div>
-                <div class="mini"><strong>Fill</strong><p>Flood fill on connected LEDs using the current brightness.</p></div>
-                <div class="mini"><strong>Line</strong><p>Click start point, then end point to draw a line.</p></div>
-                <div class="mini"><strong>Mirror X / Y</strong><p>Mirror edits across horizontal and/or vertical axis.</p></div>
-                <div class="mini"><strong>Onion</strong><p>Shows previous/next frame overlay to improve motion editing.</p></div>
-                <div class="mini"><strong>Pick</strong><p>Reads average lit brightness from current frame and sets brush value.</p></div>
+                <div class="mini"><strong>Draw / Erase</strong><p>Paint directly on the 13x13 matrix with drag support.</p></div>
+                <div class="mini"><strong>Fill</strong><p>Flood-fill connected LEDs with current brightness.</p></div>
+                <div class="mini"><strong>Line</strong><p>Click start and end to draw straight lines quickly.</p></div>
+                <div class="mini"><strong>Mirror X / Y</strong><p>Mirror edits for symmetric animations.</p></div>
+                <div class="mini"><strong>Onion</strong><p>Shows neighboring frame context while editing motion.</p></div>
+                <div class="mini"><strong>Pick</strong><p>Reads average lit brightness from current frame.</p></div>
             </div>
         </div>
 
         <div class="card">
-            <h2>3. Timeline (Stacks)</h2>
-            <p>The timeline is stack-based. Each stack is a block of repeated frames and can be expanded for fine edits.</p>
-            <h3>Stack Actions</h3>
+            <h2>3. Timeline + Audio Sync</h2>
             <ul>
-                <li><code>Duration</code>: open modal and set stack length in milliseconds.</li>
-                <li><code>Expand / Hide</code>: show individual frames for detailed editing.</li>
-                <li><code>Split</code>: divide a stack into two stacks.</li>
-                <li><code>Merge</code>: merge with the next stack.</li>
-                <li><code>Dup</code>: duplicate the stack.</li>
-                <li><code>Delete</code>: remove the stack.</li>
+                <li><code>Timeline</code> mode: frame-by-frame editing with per-frame duration slider.</li>
+                <li><code>Audio Sync</code> mode: frame blocks aligned along audio time with playback/seek.</li>
+                <li>Resize frame duration directly from frame edges in Audio Sync mode.</li>
             </ul>
-            <h3>Batch Actions</h3>
+            <p class="note">Tip: If animation total is longer than audio, export trims to audio length to keep ringtone timing stable.</p>
+        </div>
+
+        <div class="card">
+            <h2>4. Audio Converter Page</h2>
             <ul>
-                <li>Select multiple stacks using checkboxes.</li>
-                <li>Use <code>Select All</code>, <code>Delete Selected</code>, <code>Duplicate Selected</code>.</li>
+                <li>Upload MP3/M4A/WAV and preview waveform immediately.</li>
+                <li>Edit before convert:
+                    Trim start/end, append silence, and volume.</li>
+                <li>Convert to <code>.ogg</code> (Vorbis), then use <code>Use in Glyph Composer</code>.</li>
+                <li>Info buttons (<code>i</code>) explain each edit option inline.</li>
             </ul>
         </div>
 
         <div class="card">
-            <h2>4. Import / Export</h2>
-            <h3>Animation JSON</h3>
+            <h2>5. Import / Export</h2>
             <ul>
-                <li><code>Load JSON</code> imports animation frames.</li>
-                <li><code>Export JSON</code> exports current animation in packed frame format.</li>
-            </ul>
-            <h3>Project Format (.glyphproj)</h3>
-            <ul>
-                <li><code>Export .glyphproj</code> saves full editor state (stacks, groups, current frame, brightness, title).</li>
-                <li><code>Load .glyphproj</code> restores the full project for editing.</li>
-            </ul>
-            <h3>Autosave</h3>
-            <ul>
-                <li>The editor autosaves to local browser storage.</li>
-                <li>On reload, you can restore the previous session.</li>
+                <li><code>Load JSON</code> / <code>Export JSON</code> for animation exchange.</li>
+                <li><code>Load .glyphproj</code> / <code>Export .glyphproj</code> for full project state.</li>
+                <li>OGG bake writes required glyph metadata tags automatically.</li>
             </ul>
         </div>
 
         <div class="card">
-            <h2>5. OGG Workflow (Recommended)</h2>
-            <ol>
-                <li>Open your MP3 in Audacity.</li>
-                <li>Press <code>Ctrl + A</code>.</li>
-                <li>Go to <code>File -> Export Audio</code>.</li>
-                <li>Format: <code>Opus file</code>.</li>
-                <li>Leave the other settings unchanged.</li>
-                <li>Export.</li>
-                <li>Rename <code>.opus</code> to <code>.ogg</code>.</li>
-                <li>Use this <code>.ogg</code> in Glyph Composer export.</li>
-            </ol>
-            <p class="note">Why this matters: the composer writes glyph data into OGG metadata. A clean OGG/Opus source avoids compatibility issues.</p>
-        </div>
-
-        <div class="card">
-            <h2>6. Gallery Workflow</h2>
+            <h2>6. Gallery</h2>
             <ul>
-                <li>Open <code>Gallery</code> to preview published JSON animations.</li>
-                <li>Click <code>Play</code> to preview, <code>Use</code> to load into the composer.</li>
-                <li>Published entries are controlled via <code>gallery/gallery-index.json</code>.</li>
-            </ul>
-        </div>
-
-        <div class="card">
-            <h2>7. Professional Editing Tips</h2>
-            <ul>
-                <li>Block out motion first with 3-8 key stacks, then refine inside expanded stacks.</li>
-                <li>Use lower brightness for transitions and higher brightness for impact frames.</li>
-                <li>Use <code>Undo / Redo</code> aggressively when trying alternatives.</li>
-                <li>Save milestone versions as <code>.glyphproj</code> before major changes.</li>
+                <li>Published animations come from <code>gallery/gallery-index.json</code>.</li>
+                <li>Use <code>Play</code> to preview, <code>Use</code> to load into composer.</li>
             </ul>
         </div>
 
